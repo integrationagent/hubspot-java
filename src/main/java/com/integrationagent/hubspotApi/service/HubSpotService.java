@@ -1,10 +1,5 @@
 package com.integrationagent.hubspotApi.service;
 
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.google.common.base.Strings;
-import com.integrationagent.cco.model.ContactProperty;
 import com.integrationagent.hubspotApi.domain.Contact;
 import com.integrationagent.hubspotApi.utils.HubSpotException;
 import com.mashape.unirest.http.HttpResponse;
@@ -13,16 +8,6 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Author: dlunev
@@ -40,134 +25,52 @@ public class HubSpotService {
 		this.API_HOST = api_host;
 	}
 
-	public JsonNode getCustomerRawDataByEmail(String email) {
-		JsonNode jsonBody = null;
+	public JsonNode getContact(String email) throws HubSpotException{
+		JsonNode jsonBody;
+
+		String url = "/contacts/v1/contact/email/" + email + "/profile";
+
 		try {
-			jsonBody = getRequest("/contacts/v1/contact/email/" + email + "/profile");
-		} catch (UnirestException e) {
-			log.error("Cannot get contact: " + email, e);
+			jsonBody = getRequest(url);
+		} catch (HubSpotException e) {
+			throw new HubSpotException("Cannot get contact: " + email, e);
 		}
 
-		if(jsonBody == null || !jsonBody.getObject().has("vid")){
+		if (jsonBody == null || !jsonBody.getObject().has("vid")){
 			return null;
 		} else {
 			return jsonBody;
 		}
 	}
 
-	public Contact getCustomerByEmail(String email){
+	public void updateContact(Contact contact) throws HubSpotException {
 
-		try {
-			JsonNode jsonBody = getRequest("/contacts/v1/contact/email/" + email + "/profile");
+		String url = API_HOST + "/contacts/v1/contact/vid/" + contact.getId() + "/profile";
+		String properties = "";
+		//do JSON stuff
 
-			if(jsonBody == null || !jsonBody.getObject().has("vid")){
-				return null;
-			}
-
-			Contact contact = new Contact();
-			contact.setId(jsonBody.getObject().getLong("vid"));
-
-			JSONObject jsonProperties = jsonBody.getObject().getJSONObject("properties");
-
-			if(jsonProperties.has("firstname")){
-				contact.setFirstName(
-						jsonProperties.getJSONObject("firstname").getString("value"));
-			}
-
-			if(jsonProperties.has("lastname")){
-				contact.setLastName(
-						jsonProperties.getJSONObject("lastname").getString("value"));
-			}
-
-			if(jsonProperties.has("high_level_alert_note")){
-				contact.setHighLevelAlertNote(
-						jsonProperties.getJSONObject("high_level_alert_note").getString("value"));
-			}
-
-			List<ContactProperty> courseProperties = getContactProperties("course_status");
-			List<ContactProperty> courseFields = assignProperties(courseProperties, jsonProperties);
-
-			Comparator<ContactProperty> notEmptyFirst = (p1, p2) ->
-					(p1.getValue().isEmpty() == p2.getValue().isEmpty()
-							? 0 : (p1.getValue().isEmpty() ? 1 : -1));
-
-		    courseFields = courseFields.stream().sorted(
-				    notEmptyFirst.thenComparing(ContactProperty::getLabel))
-				    .collect(Collectors.toList());
-
-			List<ContactProperty> certificationProperties = getContactProperties("certifications");
-			List<ContactProperty> certificationFields = assignProperties(certificationProperties, jsonProperties);
-
-			certificationFields = certificationFields.stream().filter(
-					p -> Arrays.asList("which_certifications_do_you_hold",
-							"which_credential_do_you_want_",
-							"upcoming_exam_date",
-							"upcoming_exam_for")
-									.contains(p.getName())
-			).collect(Collectors.toList());
-
-
-			List<ContactProperty> supportProperties = getContactProperties("_support");
-			List<ContactProperty> supportFields = assignProperties(supportProperties, jsonProperties);
-
-			supportFields = supportFields.stream().filter(
-					p -> Arrays.asList("products_purchases",
-							"coach",
-							"upcoming_exam_date",
-							"upcoming_exam_for")
-									.contains(p.getName())
-			).collect(Collectors.toList());
-
-			supportFields.addAll(certificationFields);
-			supportFields.addAll(courseFields);
-
-			contact.setCourseStatusProperties(supportFields);
-
-			return contact;
-
-		} catch (HubSpotException e) {
-			log.error("Cannot get contact: " + email, e);
-		}
-
-		return null;
+		JsonNode result = postRequest(url, properties);
 
 	}
 
-	public void updateContact(String id, String properties) throws HubSpotException {
+	public Long updateOrCreateContact(Contact contact) throws HubSpotException {
 
-		String url = API_HOST + "/contacts/v1/contact/vid/" + id + "/profile";
+		String url = API_HOST + "/contacts/v1/contact/createOrUpdate/email/" + contact.getEmail();
 
-		try {
-			JsonNode result = postRequest(url, properties);
+		String properties = "";
 
-		} catch (HubSpotException e) {
-			switch (e.getCode()) {
-				case 400:
-					throw new HubSpotException("Property doesn't exist, or the property value is invalid: " + id + " \n" + properties, e);
-				case 401:
-					throw new HubSpotException("An unauthorized request is made", e);
-				case 500:
-					throw new HubSpotException("Internal server error", e);
-				default:
-					throw new HubSpotException("Cannot update contact: " + id + " \n" + properties, e);
-			}
-
-		}
-	}
-
-	public Long updateContactByEmail(String email, String properties) throws HubSpotException {
-
-		String url = API_HOST + "/contacts/v1/contact/createOrUpdate/email/" + email;
+		//do JSON stuff
+		//try Jackosn JSON:
+		// http://stackoverflow.com/questions/15786129/converting-java-objects-to-json-with-jackson
+		// http://stackoverflow.com/questions/17819710/is-there-any-way-to-convert-a-map-to-a-json-representation-using-jackson-without
 
 		try {
+			JsonNode res = postRequest(url, properties);
 
-			JsonNode result = postRequest(url, properties);
-
-			return result.getObject().getLong("vid");
+			return res.getObject().getLong("vid");
 
 		} catch (HubSpotException e) {
-			throw new HubSpotException("Cannot update contact: " + email + " \n"
-					+ properties, e);
+			throw new HubSpotException("Cannot update contact: " + contact.getEmail() + " \n" + properties, e);
 		}
 	}
 
@@ -190,7 +93,8 @@ public class HubSpotService {
 		return jsonNode.getObject().getLong("listId");
 	}
 
-	public List<ContactProperty> getContactProperties(String group){
+	//return Map<String,String>
+	/*public List<ContactProperty> getContactProperties(String group){
 
 		List<ContactProperty> properties = new ArrayList<ContactProperty>();
 
@@ -215,40 +119,7 @@ public class HubSpotService {
 			).collect(Collectors.toList());
 
 		return hbProperties;
-	}
-
-	public List<ContactProperty> assignProperties(List<ContactProperty> hbProperties, JSONObject jsonProperties){
-
-
-		List<ContactProperty> contactProperties = new ArrayList<>();
-
-			for (ContactProperty hbProperty : hbProperties) {
-
-				ContactProperty contactProperty = hbProperty;
-
-				String value = "";
-
-				if(jsonProperties.has(hbProperty.getName())){
-
-					value = jsonProperties.getJSONObject(hbProperty.getName()).getString("value");
-
-					if(!Strings.isNullOrEmpty(value) && hbProperty.getFieldType().equals("date")){
-						Instant instant = Instant.ofEpochMilli(Long.parseLong(value));
-                        LocalDateTime ldt = LocalDateTime.ofInstant(instant, ZoneOffset.UTC);
-						value = ldt.format(DateTimeFormatter.ofPattern("MM/dd/yy"));
-					}
-				}
-
-				if(hbProperty.getName().contains("_date")){
-					contactProperty.setFieldType("date");
-				}
-
-				contactProperty.setValue(value);
-				contactProperties.add(contactProperty);
-			}
-
-		return contactProperties;
-	}
+	}*/
 
 	public JsonNode getRequest(String url) throws HubSpotException {
 
@@ -300,7 +171,7 @@ public class HubSpotService {
 
 			return resp.getBody();
 		} catch (UnirestException e) {
-			throw new HubSpotException("Cannot make a request: \n" + properties, e);
+			throw new HubSpotException("Cannot make delete request", e);
 		}
 
 	}
