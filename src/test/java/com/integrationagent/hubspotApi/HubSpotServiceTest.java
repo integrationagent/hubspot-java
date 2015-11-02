@@ -14,9 +14,17 @@ public class HubSpotServiceTest {
     private HubSpotService hubSpotService = new HubSpotService(API_KEY, API_HOST);
 
     @Test
-    public void getContact_Test() throws Exception {
+    public void getContact_Email_Test() throws Exception {
         Contact contact = hubSpotService.getContact("denis@reviewtogo.com");
         assertEquals(79, contact.getId());
+        assertEquals("Garry", contact.getFirstname());
+    }
+
+    @Test
+    public void getContact_Id_Test() throws Exception {
+        Contact contact = hubSpotService.getContact(79);
+        assertEquals(79, contact.getId());
+        assertEquals("Garry", contact.getFirstname());
     }
 
     @Test

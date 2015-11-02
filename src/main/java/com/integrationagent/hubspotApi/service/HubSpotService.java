@@ -1,5 +1,6 @@
 package com.integrationagent.hubspotApi.service;
 
+import com.google.common.base.Strings;
 import com.integrationagent.hubspotApi.domain.Contact;
 import com.integrationagent.hubspotApi.utils.HubSpotException;
 import com.mashape.unirest.http.HttpResponse;
@@ -10,7 +11,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Iterator;
-import java.util.Map;
 
 /**
  * Author: dlunev
@@ -29,82 +29,53 @@ public class HubSpotService {
 	}
 
 	public Contact getContact(String email) throws HubSpotException{
-		JsonNode jsonBody;
-		Contact contact;
-
 		String url = "/contacts/v1/contact/email/" + email + "/profile";
 
 		try {
-			jsonBody = getRequest(url);
-
-			contact = new Contact();
-			contact.setId(jsonBody.getObject().getLong("vid"));
-			contact.setEmail(email);
-
-			JSONObject jsonProperties = jsonBody.getObject().getJSONObject("properties");
-
-			if(jsonProperties.has("firstname")){
-				contact.setFirstname(
-						jsonProperties.getJSONObject("firstname").getString("value"));
-			}
-
-			if(jsonProperties.has("lastname")){
-				contact.setLastname(
-						jsonProperties.getJSONObject("lastname").getString("value"));
-			}
-
-			Iterator keys = jsonProperties.keys();
-			while(keys.hasNext()) {
-				String key = (String)keys.next();
-				String value;
-				if ( jsonProperties.get(key) instanceof JSONObject ) {
-					value = ((JSONObject) jsonProperties.get(key)).getString("value");
-				} else {
-					value = jsonProperties.get(key).toString();
-				}
-
-				contact.setProperty(key, value);
-			}
+			JsonNode jsonBody = getRequest(url);
+			return parseContactData(jsonBody);
 		} catch (HubSpotException e) {
 			throw new HubSpotException("Cannot get contact: " + email, e);
 		}
+	}
 
-		return contact;
+	public Contact getContact(long id) throws HubSpotException{
+		String url = "/contacts/v1/contact/vid/" + id + "/profile";
+
+		try {
+			JsonNode jsonBody = getRequest(url);
+			return parseContactData(jsonBody);
+		} catch (HubSpotException e) {
+			throw new HubSpotException("Cannot get contact: " + id, e);
+		}
 	}
 
 	public void updateContact(Contact contact) throws HubSpotException {
-
 		if (contact.getId() <= 0) {
 			throw new HubSpotException("User ID must be provided");
 		}
 
 		String url = API_HOST + "/contacts/v1/contact/vid/" + contact.getId() + "/profile";
 		String properties = contact.toJsonString();
-		JsonNode jsonBody;
 
 		try {
-			jsonBody = postRequest(url, properties);
+			JsonNode jsonBody = postRequest(url, properties);
 		} catch (HubSpotException e) {
 			throw new HubSpotException("Cannot update contact: " + contact.getId(), e);
 		}
 	}
 
-	public Long updateOrCreateContact(Contact contact) throws HubSpotException {
+	public Contact updateOrCreateContact(Contact contact) throws HubSpotException {
+		if (Strings.isNullOrEmpty(contact.getEmail())) {
+			throw new HubSpotException("User email must be provided");
+		}
 
 		String url = API_HOST + "/contacts/v1/contact/createOrUpdate/email/" + contact.getEmail();
-
-		String properties = "";
-
-		//do JSON stuff
-		//try Jackosn JSON:
-		// http://stackoverflow.com/questions/15786129/converting-java-objects-to-json-with-jackson
-		// http://stackoverflow.com/questions/17819710/is-there-any-way-to-convert-a-map-to-a-json-representation-using-jackson-without
+		String properties = contact.toJsonString();
 
 		try {
-			JsonNode res = postRequest(url, properties);
-
-			return res.getObject().getLong("vid");
-
+			JsonNode jsonBody = postRequest(url, properties);
+			return parseContactData(jsonBody);
 		} catch (HubSpotException e) {
 			throw new HubSpotException("Cannot update contact: " + contact.getEmail() + " \n" + properties, e);
 		}
@@ -115,17 +86,15 @@ public class HubSpotService {
 			throw new HubSpotException("User ID must be provided");
 		}
 		String url = API_HOST + "/contacts/v1/contact/vid/" + contact.getId();
-		JsonNode jsonBody;
 
 		try {
-			jsonBody = deleteRequest(url);
+			JsonNode jsonBody = deleteRequest(url);
 		} catch (HubSpotException e) {
 			throw new HubSpotException("Cannot update contact: " + contact.getId(), e);
 		}
 	}
 
 	public Long createList(String name, String portal_id) throws HubSpotException {
-
 		String url = API_HOST + "/contacts/v1/lists";
 
 		String properties = new JSONObject()
@@ -168,7 +137,6 @@ public class HubSpotService {
 	}*/
 
 	public JsonNode getRequest(String url) throws HubSpotException {
-
 		try {
 			HttpResponse<JsonNode> resp = Unirest
                     .get(API_HOST + url)
@@ -182,9 +150,7 @@ public class HubSpotService {
 	}
 
 	public JsonNode postRequest(String url, String properties) throws HubSpotException {
-
 		try {
-
 			HttpResponse<JsonNode> resp = Unirest
 					.post(url)
 					.queryString("hapikey", API_KEY)
@@ -252,5 +218,28 @@ public class HubSpotService {
 						.put("body", body));
 
 		logEngagement(jsonObject.toString());
+	}
+
+	private Contact parseContactData(JsonNode jsonBody) {
+		Contact contact = new Contact();
+
+		contact.setId(jsonBody.getObject().getLong("vid"));
+
+		JSONObject jsonProperties = jsonBody.getObject().getJSONObject("properties");
+
+		Iterator keys = jsonProperties.keys();
+		while(keys.hasNext()) {
+			String key = (String)keys.next();
+			String value;
+			if ( jsonProperties.get(key) instanceof JSONObject ) {
+				value = ((JSONObject) jsonProperties.get(key)).getString("value");
+			} else {
+				value = jsonProperties.get(key).toString();
+			}
+
+			contact.setProperty(key, value);
+		}
+
+		return contact;
 	}
 }

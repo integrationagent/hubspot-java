@@ -1,71 +1,65 @@
 package com.integrationagent.hubspotApi.domain;
 
 import com.integrationagent.hubspotApi.utils.HubSpotHelper;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Contact {
-    private long id;
-    private String email;
-    private String firstname;
-    private String lastname;
-    private Map<String, String> properties = new HashMap<String, String>();
+
+    private Map<String, String> properties = new HashMap<>();
 
     public Contact() {
     }
 
     public Contact(long id, String email, String firstname, String lastname) {
-        this.id = id;
-        this.email = email;
-        this.firstname = firstname;
-        this.lastname = lastname;
+        this.properties.put("vid", Long.toString(id));
+        this.properties.put("email", email);
+        this.properties.put("firstname", firstname);
+        this.properties.put("lastname", lastname);
     }
 
     public Contact(long id, String email, String firstname, String lastname, Map<String, String> properties) {
-        this.id = id;
-        this.email = email;
-        this.firstname = firstname;
-        this.lastname = lastname;
-        this.properties = properties;
+        this.properties.put("vid", Long.toString(id));
+        this.properties.put("email", email);
+        this.properties.put("firstname", firstname);
+        this.properties.put("lastname", lastname);
+        this.properties.putAll(properties);
     }
 
     public long getId() {
-        return id;
+        return Long.parseLong(this.properties.get("vid"));
     }
 
     public Contact setId(long id) {
-        this.id = id;
+        this.properties.put("vid", Long.toString(id));
         return this;
     }
 
     public String getEmail() {
-        return email;
+        return this.properties.get("email");
     }
 
     public Contact setEmail(String email) {
-        this.email = email;
+        this.properties.put("email", email);
         return this;
     }
 
     public String getFirstname() {
-        return firstname;
+        return this.properties.get("firstname");
     }
 
     public Contact setFirstname(String firstname) {
-        this.firstname = firstname;
+        this.properties.put("firstname", firstname);
         return this;
     }
 
     public String getLastname() {
-        return lastname;
+        return this.properties.get("lastname");
     }
 
     public Contact setLastname(String lastname) {
-        this.lastname = lastname;
+        this.properties.put("lastname", lastname);
         return this;
     }
 
@@ -88,22 +82,9 @@ public class Contact {
     }
 
     public String toJsonString() {
-
-        JSONArray ja = new JSONArray();
-            ja.put(HubSpotHelper.getJsonObject("firstname", this.getFirstname()));
-            ja.put(HubSpotHelper.getJsonObject("lastname", this.getLastname()));
-            ja.put(HubSpotHelper.getJsonObject("email", this.getEmail()));
-
-
-        Iterator iterator = this.getProperties().entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry pair = (Map.Entry)iterator.next();
-            String key = (String)pair.getKey();
-            String value = (String)pair.getValue();
-
-            ja.put(HubSpotHelper.getJsonObject(key,value));
-        }
-
-        return new JSONObject().put("properties", ja).toString();
+        Map<String, String> properties = this.properties.entrySet().stream()
+                                                        .filter(p -> p.getKey() != "vid")
+                                                        .collect(Collectors.toMap(p -> p.getKey(), p -> p.getValue()));
+        return HubSpotHelper.mapToJsonString(properties);
     }
 }
