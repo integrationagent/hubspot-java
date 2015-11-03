@@ -2,7 +2,10 @@ package com.integrationagent.hubspotApi;
 
 import com.integrationagent.hubspotApi.domain.Contact;
 import com.integrationagent.hubspotApi.service.HubSpotService;
+import com.integrationagent.hubspotApi.utils.HubSpotException;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -28,6 +31,17 @@ public class HubSpotServiceTest {
     }
 
     @Test
+    public void updateOrCreateContact_Test() throws Exception {
+        String testEmail = "test@mail.ru";
+        String testFirstname = "Testfristname";
+        String testLastname = "Testlastname";
+
+        Contact contact = new Contact(testEmail, testFirstname, testLastname);
+        contact = hubSpotService.updateOrCreateContact(contact);
+        assertEquals(testFirstname, hubSpotService.getContact(contact.getId()).getFirstname());
+    }
+
+    @Test
     public void updateContact_Test() throws Exception {
         String test_property = "linkedinbio";
         String test_value_1 = "Test value 1";
@@ -49,4 +63,20 @@ public class HubSpotServiceTest {
         assertEquals(hubSpotService.getContact("denis@reviewtogo.com").getProperty(test_property), test_value);
     }
 
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
+
+    @Test
+    public void deleteContact_Test() throws Exception {
+        String testEmail = "test@mail.ru";
+        String testFirstname = "Testfristname";
+        String testLastname = "Testlastname";
+
+        Contact contact = new Contact(testEmail, testFirstname, testLastname);
+        contact = hubSpotService.updateOrCreateContact(contact);
+        hubSpotService.deleteContact(contact);
+
+        exception.expect(HubSpotException.class);
+        hubSpotService.getContact(contact.getId());
+    }
 }

@@ -75,9 +75,10 @@ public class HubSpotService {
 
 		try {
 			JsonNode jsonBody = postRequest(url, properties);
-			return parseContactData(jsonBody);
+			contact.setId(jsonBody.getObject().getLong("vid"));
+			return contact;
 		} catch (HubSpotException e) {
-			throw new HubSpotException("Cannot update contact: " + contact.getEmail() + " \n" + properties, e);
+			throw new HubSpotException("Cannot update or create contact: " + contact.getEmail() + " \n" + properties, e);
 		}
 	}
 
@@ -124,6 +125,10 @@ public class HubSpotService {
                     .get(API_HOST + url)
                     .queryString("hapikey", API_KEY)
                         .asJson();
+
+			if(204 != resp.getStatus() && 200 != resp.getStatus()){
+				throw new HubSpotException(resp.getStatusText(), resp.getStatus());
+			}
 
 			return resp.getBody();
 		} catch (UnirestException e) {

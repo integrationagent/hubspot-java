@@ -12,8 +12,7 @@ public class Contact {
     public Contact() {
     }
 
-    public Contact(long id, String email, String firstname, String lastname) {
-        this.properties.put("vid", Long.toString(id));
+    public Contact(String email, String firstname, String lastname) {
         this.properties.put("email", email);
         this.properties.put("firstname", firstname);
         this.properties.put("lastname", lastname);
