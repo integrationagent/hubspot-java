@@ -9,8 +9,7 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Author: dlunev
@@ -50,7 +49,7 @@ public class HubSpotService {
 		}
 	}
 
-	public void updateContact(Contact contact) throws HubSpotException {
+	public Contact updateContact(Contact contact) throws HubSpotException {
 		if (contact.getId() <= 0) {
 			throw new HubSpotException("User ID must be provided");
 		}
@@ -60,6 +59,7 @@ public class HubSpotService {
 
 		try {
 			JsonNode jsonBody = postRequest(url, properties);
+			return contact;
 		} catch (HubSpotException e) {
 			throw new HubSpotException("Cannot update contact: " + contact.getId(), e);
 		}
@@ -108,33 +108,15 @@ public class HubSpotService {
 		return jsonNode.getObject().getLong("listId");
 	}
 
-	//return Map<String,String>
-	/*public List<ContactProperty> getContactProperties(String group){
-
-		List<ContactProperty> properties = new ArrayList<ContactProperty>();
+	public void deleteList(String listId) throws HubSpotException {
+		String url = API_HOST + "/contacts/v1/lists/" + listId;
 
 		try {
-
-			JsonNode jsonBody = getRequest("/contacts/v1/groups/" + group);
-
-			ObjectMapper mapper = new ObjectMapper();
-
-			properties = mapper.readValue(
-					jsonBody.getObject().get("properties").toString(),
-					TypeFactory.defaultInstance().constructCollectionType(List.class,
-							ContactProperty.class));
-
-		} catch (Exception e) {
-			log.error("Cannot get properties", e);
+			JsonNode jsonNode = postRequest(url, "");
+		} catch (HubSpotException e) {
+			throw new HubSpotException("Cannot delete list: \n" + listId, e);
 		}
-
-
-		List<ContactProperty> hbProperties = properties.stream().filter(
-					p -> (!p.isDeleted() && !p.isHidden())
-			).collect(Collectors.toList());
-
-		return hbProperties;
-	}*/
+	}
 
 	public JsonNode getRequest(String url) throws HubSpotException {
 		try {
@@ -227,18 +209,15 @@ public class HubSpotService {
 
 		JSONObject jsonProperties = jsonBody.getObject().getJSONObject("properties");
 
-		Iterator keys = jsonProperties.keys();
-		while(keys.hasNext()) {
-			String key = (String)keys.next();
-			String value;
-			if ( jsonProperties.get(key) instanceof JSONObject ) {
-				value = ((JSONObject) jsonProperties.get(key)).getString("value");
-			} else {
-				value = jsonProperties.get(key).toString();
-			}
+		Set<String> keys = jsonProperties.keySet();
 
-			contact.setProperty(key, value);
-		}
+		keys.stream().forEach( key ->
+				contact.setProperty(key,
+									jsonProperties.get(key) instanceof JSONObject ?
+											((JSONObject) jsonProperties.get(key)).getString("value") :
+											jsonProperties.get(key).toString()
+									)
+		);
 
 		return contact;
 	}

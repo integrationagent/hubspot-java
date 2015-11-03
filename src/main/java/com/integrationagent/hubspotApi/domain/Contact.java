@@ -83,7 +83,7 @@ public class Contact {
 
     public String toJsonString() {
         Map<String, String> properties = this.properties.entrySet().stream()
-                                                        .filter(p -> p.getKey() != "vid")
+                                                        .filter(p -> !p.getKey().equals("vid"))
                                                         .collect(Collectors.toMap(p -> p.getKey(), p -> p.getValue()));
         return HubSpotHelper.mapToJsonString(properties);
     }
