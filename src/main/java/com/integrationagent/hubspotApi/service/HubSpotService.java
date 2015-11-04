@@ -49,6 +49,23 @@ public class HubSpotService {
 		}
 	}
 
+	public Contact createContact(Contact contact) throws HubSpotException {
+		if (Strings.isNullOrEmpty(contact.getEmail())) {
+			throw new HubSpotException("User email must be provided");
+		}
+
+		String url = API_HOST + "/contacts/v1/contact";
+		String properties = contact.toJsonString();
+
+		try {
+			JsonNode jsonBody = postRequest(url, properties);
+			contact.setId(jsonBody.getObject().getLong("vid"));
+			return contact;
+		} catch (HubSpotException e) {
+			throw new HubSpotException("Cannot create contact: " + contact.getEmail() + ". Reason: " + e.getMessage(), e);
+		}
+	}
+
 	public Contact updateContact(Contact contact) throws HubSpotException {
 		if (contact.getId() <= 0) {
 			throw new HubSpotException("User ID must be provided");
@@ -95,13 +112,25 @@ public class HubSpotService {
 		}
 	}
 
-	public Long createList(String name, String portal_id) throws HubSpotException {
+	public Long getList(String listId) throws HubSpotException {
+		String url = "/contacts/v1/lists/" + listId;
+
+		try {
+			JsonNode jsonNode = getRequest(url);
+			//do we need list class ?!
+			return jsonNode.getObject().getLong("listId");
+		} catch (HubSpotException e) {
+			throw new HubSpotException("Cannot get list: " + listId + ". Reason: " + e.getMessage(), e);
+		}
+	}
+
+	public Long createList(String name, String portalId) throws HubSpotException {
 		String url = API_HOST + "/contacts/v1/lists";
 
 		String properties = new JSONObject()
 				.put("name", name)
 				.put("dynamic", false)
-				.put("portalId", portal_id)
+				.put("portalId", portalId)
 				.toString();
 
 		try {
@@ -116,7 +145,7 @@ public class HubSpotService {
 		String url = API_HOST + "/contacts/v1/lists/" + listId;
 
 		try {
-			JsonNode jsonNode = postRequest(url, "");
+			JsonNode jsonNode = deleteRequest(url);
 		} catch (HubSpotException e) {
 			throw new HubSpotException("Cannot delete list: " + listId + ". Reason: " + e.getMessage(), e);
 		}

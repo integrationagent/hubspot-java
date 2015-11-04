@@ -9,11 +9,13 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class HubSpotServiceTest {
 
     private String API_KEY = "e84650f2-c176-4e40-a8e6-2bc416ef8ffc";
     private String API_HOST = "http://api.hubapi.com";
+    private Long PORTAL_ID = 175821L;
 
     private HubSpotService hubSpotService = new HubSpotService(API_KEY, API_HOST);
 
@@ -144,4 +146,22 @@ public class HubSpotServiceTest {
         exception.expectMessage(StringContains.containsString("User ID must be provided"));
         hubSpotService.deleteContact(contact);
     }
+
+    @Test
+    public void getList_Test() throws Exception {
+        Long listId = 1L;
+        assertEquals(listId,hubSpotService.getList(listId.toString()));
+    }
+
+    @Test
+    public void createList_Test() throws Exception {
+        Long portalId = PORTAL_ID;
+        String name = "TEST_LIST2";
+
+        Long result = hubSpotService.createList(name, portalId.toString());
+        assertEquals(result, hubSpotService.getList(result.toString()));
+        hubSpotService.deleteList(result.toString());
+    }
+
+
 }
