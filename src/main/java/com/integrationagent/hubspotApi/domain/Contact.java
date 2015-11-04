@@ -1,5 +1,6 @@
 package com.integrationagent.hubspotApi.domain;
 
+import com.google.common.base.Strings;
 import com.integrationagent.hubspotApi.utils.HubSpotHelper;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +28,7 @@ public class Contact {
     }
 
     public long getId() {
-        return Long.parseLong(this.properties.get("vid"));
+        return !Strings.isNullOrEmpty(this.properties.get("vid")) ? Long.parseLong(this.properties.get("vid")) : 0;
     }
 
     public Contact setId(long id) {

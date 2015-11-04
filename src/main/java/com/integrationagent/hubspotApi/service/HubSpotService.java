@@ -34,7 +34,7 @@ public class HubSpotService {
 			JsonNode jsonBody = getRequest(url);
 			return parseContactData(jsonBody);
 		} catch (HubSpotException e) {
-			throw new HubSpotException("Cannot get contact: " + email, e);
+			throw new HubSpotException("Cannot get contact: " + email + ". Reason: " + e.getMessage(), e);
 		}
 	}
 
@@ -45,7 +45,7 @@ public class HubSpotService {
 			JsonNode jsonBody = getRequest(url);
 			return parseContactData(jsonBody);
 		} catch (HubSpotException e) {
-			throw new HubSpotException("Cannot get contact: " + id, e);
+			throw new HubSpotException("Cannot get contact: " + id + ". Reason: " + e.getMessage(), e);
 		}
 	}
 
@@ -61,7 +61,7 @@ public class HubSpotService {
 			JsonNode jsonBody = postRequest(url, properties);
 			return contact;
 		} catch (HubSpotException e) {
-			throw new HubSpotException("Cannot update contact: " + contact.getId(), e);
+			throw new HubSpotException("Cannot update contact: " + contact.getId() + ". Reason: " + e.getMessage(), e);
 		}
 	}
 
@@ -78,12 +78,12 @@ public class HubSpotService {
 			contact.setId(jsonBody.getObject().getLong("vid"));
 			return contact;
 		} catch (HubSpotException e) {
-			throw new HubSpotException("Cannot update or create contact: " + contact.getEmail() + " \n" + properties, e);
+			throw new HubSpotException("Cannot update or create contact: " + contact.getEmail() + ". Reason: " + e.getMessage(), e);
 		}
 	}
 
 	public void deleteContact(Contact contact) throws HubSpotException {
-		if (contact.getId() <= 0) {
+		if (contact.getId() == 0) {
 			throw new HubSpotException("User ID must be provided");
 		}
 		String url = API_HOST + "/contacts/v1/contact/vid/" + contact.getId();
@@ -91,7 +91,7 @@ public class HubSpotService {
 		try {
 			JsonNode jsonBody = deleteRequest(url);
 		} catch (HubSpotException e) {
-			throw new HubSpotException("Cannot update contact: " + contact.getId(), e);
+			throw new HubSpotException("Cannot update contact: " + contact.getId() + ". Reason: " + e.getMessage(), e);
 		}
 	}
 
@@ -104,9 +104,12 @@ public class HubSpotService {
 				.put("portalId", portal_id)
 				.toString();
 
-		JsonNode jsonNode = postRequest(url, properties);
-
-		return jsonNode.getObject().getLong("listId");
+		try {
+			JsonNode jsonNode = postRequest(url, properties);
+			return jsonNode.getObject().getLong("listId");
+		} catch (HubSpotException e) {
+			throw new HubSpotException("Cannot create list: " + name + ". Reason: " + e.getMessage(), e);
+		}
 	}
 
 	public void deleteList(String listId) throws HubSpotException {
@@ -115,7 +118,7 @@ public class HubSpotService {
 		try {
 			JsonNode jsonNode = postRequest(url, "");
 		} catch (HubSpotException e) {
-			throw new HubSpotException("Cannot delete list: \n" + listId, e);
+			throw new HubSpotException("Cannot delete list: " + listId + ". Reason: " + e.getMessage(), e);
 		}
 	}
 
@@ -127,7 +130,12 @@ public class HubSpotService {
                         .asJson();
 
 			if(204 != resp.getStatus() && 200 != resp.getStatus()){
-				throw new HubSpotException(resp.getStatusText(), resp.getStatus());
+				String message = resp.getBody().getObject().getString("message");
+				if (!Strings.isNullOrEmpty(message)) {
+					throw new HubSpotException(message, resp.getStatus());
+				} else {
+					throw new HubSpotException(resp.getStatusText(), resp.getStatus());
+				}
 			}
 
 			return resp.getBody();
@@ -147,11 +155,15 @@ public class HubSpotService {
 					.asJson();
 
 			if(204 != resp.getStatus() && 200 != resp.getStatus()){
-				throw new HubSpotException(resp.getStatusText(), resp.getStatus());
+				String message = resp.getBody().getObject().getString("message");
+				if (!Strings.isNullOrEmpty(message)) {
+					throw new HubSpotException(message, resp.getStatus());
+				} else {
+					throw new HubSpotException(resp.getStatusText(), resp.getStatus());
+				}
 			}
 
 			return resp.getBody();
-
 		} catch (UnirestException e) {
 			throw new HubSpotException("Cannot make a request: \n" + properties, e);
 		}
@@ -165,7 +177,12 @@ public class HubSpotService {
 					.asJson();
 
 			if(204 != resp.getStatus() && 200 != resp.getStatus()){
-				throw new HubSpotException(resp.getStatusText(), resp.getStatus());
+				String message = resp.getBody().getObject().getString("message");
+				if (!Strings.isNullOrEmpty(message)) {
+					throw new HubSpotException(message, resp.getStatus());
+				} else {
+					throw new HubSpotException(resp.getStatusText(), resp.getStatus());
+				}
 			}
 
 			return resp.getBody();
@@ -176,15 +193,18 @@ public class HubSpotService {
 	}
 
 	public void assignList(Long listId, Long contactId) throws HubSpotException {
-
 		String url = API_HOST + "/contacts/v1/lists/" + listId + "/add";
 
 		String properties = new JSONObject()
-				.put("vids", new JSONArray()
-						.put(contactId))
-				.toString();
+					.put("vids", new JSONArray()
+					.put(contactId))
+					.toString();
 
-		postRequest(url, properties);
+		try {
+			postRequest(url, properties);
+		} catch (HubSpotException e) {
+			throw new HubSpotException("Cannot assign list " + listId + ". Reason: " + e.getMessage(), e);
+		}
 	}
 
 	public void logEngagement(String properties) throws HubSpotException {
@@ -196,15 +216,19 @@ public class HubSpotService {
 	public void logNote(Long contactId, String body) throws HubSpotException {
 
 		JSONObject jsonObject = new JSONObject()
-				.put("engagement", new JSONObject()
-						.put("active", true)
-						.put("type", "NOTE"))
-				.put("associations", new JSONObject()
-						.put("contactIds", new JSONArray().put(contactId)))
-				.put("metadata", new JSONObject()
-						.put("body", body));
+					.put("engagement", new JSONObject()
+					.put("active", true)
+					.put("type", "NOTE"))
+					.put("associations", new JSONObject()
+					.put("contactIds", new JSONArray().put(contactId)))
+					.put("metadata", new JSONObject()
+					.put("body", body));
 
-		logEngagement(jsonObject.toString());
+		try {
+			logEngagement(jsonObject.toString());
+		} catch (HubSpotException e) {
+			throw new HubSpotException("Cannot log NOTE for contact " + contactId + ". Reason: " + e.getMessage(), e);
+		}
 	}
 
 	private Contact parseContactData(JsonNode jsonBody) {
