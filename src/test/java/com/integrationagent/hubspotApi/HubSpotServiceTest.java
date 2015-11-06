@@ -9,13 +9,12 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class HubSpotServiceTest {
 
-    private String API_KEY = "e84650f2-c176-4e40-a8e6-2bc416ef8ffc";
+    private String API_KEY = "API_KEY";
     private String API_HOST = "http://api.hubapi.com";
-    private Long PORTAL_ID = 175821L;
+    private Long PORTAL_ID = 000000L;
 
     private HubSpotService hubSpotService = new HubSpotService(API_KEY, API_HOST);
 
