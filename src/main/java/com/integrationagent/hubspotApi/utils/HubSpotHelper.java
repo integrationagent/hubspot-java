@@ -37,31 +37,4 @@ public class HubSpotHelper {
 
         return new JSONObject().put("properties", ja).toString();
     }
-
-    public static String getHubSpotStatus(String unsubscribeReason, String status) {
-        String result;
-
-        if (status.equals("subscribed") && Strings.isNullOrEmpty(unsubscribeReason)) {
-            result = "s_Active";
-        } else {
-            switch (unsubscribeReason) {
-                case "admin_unsubscribed":
-                    result = "s_Refunded";
-                    break;
-                case "auto_expired":
-                    result = "s_Expired";
-                    break;
-                case "billing_failed":
-                    result = "s_billing_failed";
-                    break;
-                case "client_cancelled":
-                    result = "s_Unsubscribed";
-                    break;
-                default:
-                    result = "";
-                    break;
-            }
-        }
-        return result;
-    }
 }
