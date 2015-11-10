@@ -34,7 +34,11 @@ public class HubSpotService {
 			JsonNode jsonBody = getRequest(url);
 			return parseContactData(jsonBody);
 		} catch (HubSpotException e) {
-			throw new HubSpotException("Cannot get contact: " + email + ". Reason: " + e.getMessage(), e);
+			if (e.getCode() == 404) {
+				return null;
+			} else {
+				throw new HubSpotException("Cannot get contact: " + email + ". Reason: " + e.getMessage(), e);
+			}
 		}
 	}
 
@@ -45,7 +49,11 @@ public class HubSpotService {
 			JsonNode jsonBody = getRequest(url);
 			return parseContactData(jsonBody);
 		} catch (HubSpotException e) {
-			throw new HubSpotException("Cannot get contact: " + id + ". Reason: " + e.getMessage(), e);
+			if (e.getCode() == 404) {
+				return null;
+			} else {
+				throw new HubSpotException("Cannot get contact: " + id + ". Reason: " + e.getMessage(), e);
+			}
 		}
 	}
 
@@ -67,7 +75,7 @@ public class HubSpotService {
 	}
 
 	public Contact updateContact(Contact contact) throws HubSpotException {
-		if (contact.getId() <= 0) {
+		if (contact.getId() == 0) {
 			throw new HubSpotException("User ID must be provided");
 		}
 
@@ -158,14 +166,7 @@ public class HubSpotService {
                     .queryString("hapikey", API_KEY)
                         .asJson();
 
-			if(204 != resp.getStatus() && 200 != resp.getStatus()){
-				String message = resp.getBody().getObject().getString("message");
-				if (!Strings.isNullOrEmpty(message)) {
-					throw new HubSpotException(message, resp.getStatus());
-				} else {
-					throw new HubSpotException(resp.getStatusText(), resp.getStatus());
-				}
-			}
+			checkResponse(resp);
 
 			return resp.getBody();
 		} catch (UnirestException e) {
@@ -183,14 +184,7 @@ public class HubSpotService {
                     .body(properties)
 					.asJson();
 
-			if(204 != resp.getStatus() && 200 != resp.getStatus()){
-				String message = resp.getBody().getObject().getString("message");
-				if (!Strings.isNullOrEmpty(message)) {
-					throw new HubSpotException(message, resp.getStatus());
-				} else {
-					throw new HubSpotException(resp.getStatusText(), resp.getStatus());
-				}
-			}
+			checkResponse(resp);
 
 			return resp.getBody();
 		} catch (UnirestException e) {
@@ -205,14 +199,7 @@ public class HubSpotService {
 					.queryString("hapikey", API_KEY)
 					.asJson();
 
-			if(204 != resp.getStatus() && 200 != resp.getStatus()){
-				String message = resp.getBody().getObject().getString("message");
-				if (!Strings.isNullOrEmpty(message)) {
-					throw new HubSpotException(message, resp.getStatus());
-				} else {
-					throw new HubSpotException(resp.getStatusText(), resp.getStatus());
-				}
-			}
+			checkResponse(resp);
 
 			return resp.getBody();
 		} catch (UnirestException e) {
@@ -257,6 +244,17 @@ public class HubSpotService {
 			logEngagement(jsonObject.toString());
 		} catch (HubSpotException e) {
 			throw new HubSpotException("Cannot log NOTE for contact " + contactId + ". Reason: " + e.getMessage(), e);
+		}
+	}
+
+	private void checkResponse(HttpResponse<JsonNode> resp) throws HubSpotException{
+		if(204 != resp.getStatus() && 200 != resp.getStatus()){
+			String message = resp.getBody().getObject().getString("message");
+			if (!Strings.isNullOrEmpty(message)) {
+				throw new HubSpotException(message, resp.getStatus());
+			} else {
+				throw new HubSpotException(resp.getStatusText(), resp.getStatus());
+			}
 		}
 	}
 
