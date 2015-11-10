@@ -4,17 +4,24 @@ import com.integrationagent.hubspotApi.domain.Contact;
 import com.integrationagent.hubspotApi.service.HubSpotService;
 import com.integrationagent.hubspotApi.utils.HubSpotException;
 import org.hamcrest.core.StringContains;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Properties;
 
 import static org.junit.Assert.*;
 
 public class HubSpotServiceTest {
 
-    private String API_KEY = "API_KEY";
+    private static String API_KEY;
+    private static Long PORTAL_ID;
+
     private String API_HOST = "http://api.hubapi.com";
-    private Long PORTAL_ID = 000000L;
 
     private final String testEmail = "test@mail.ru";
     private final String testBadEmail = "test@test.test";
@@ -25,6 +32,19 @@ public class HubSpotServiceTest {
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
+
+    @BeforeClass
+    public static void oneTimeSetUp() {
+        Properties p = new Properties();
+        try {
+            p.load(new FileReader(new File("src//test//resources//config.properties")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        API_KEY = p.getProperty("hubspot.apikey");
+        PORTAL_ID = Long.parseLong(p.getProperty("hubspot.portalid"));
+    }
 
     @Test
     public void createContact_Test() throws Exception {
