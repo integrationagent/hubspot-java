@@ -12,6 +12,7 @@ import org.junit.rules.ExpectedException;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Properties;
 
 import static org.junit.Assert.*;
@@ -23,7 +24,7 @@ public class HubSpotServiceTest {
 
     private String API_HOST = "http://api.hubapi.com";
 
-    private final String testEmail = "test@mail.ru";
+    private final String testEmail = "test" + Instant.now().getEpochSecond() + "@mail.com";
     private final String testBadEmail = "test@test.test";
     private final String testFirstname = "Testfristname";
     private final String testLastname = "Testlastname";
@@ -90,7 +91,7 @@ public class HubSpotServiceTest {
 
     @Test
     public void updateOrCreateContact_Bad_Email_Test() throws Exception {
-        Contact contact = new Contact(testEmail, testFirstname, testLastname);
+        Contact contact = new Contact(testBadEmail, testFirstname, testLastname);
 
         exception.expect(HubSpotException.class);
         exception.expectMessage(StringContains.containsString("Property values were not valid"));
