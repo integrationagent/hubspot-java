@@ -1,16 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.integrationagent.hubspot-api</groupId>
-    <artifactId>hubspot-api</artifactId>
+    <artifactId>hubspot-java</artifactId>
     <packaging>jar</packaging>
-    <version>0.2-SNAPSHOT</version>
-    <name>hubspot-api</name>
+    <version>0.2</version>
+    <name>hubspot-java</name>
     <url>http://maven.apache.org</url>
     <scm>
         <connection>scm:git:https://github.com/integrationagent/hubspot-java.git</connection>
         <developerConnection>scm:git:git@github.com:integrationagent/hubspot-java.git</developerConnection>
         <url>https://github.com/integrationagent/hubspot-java</url>
-        <tag>hubspot-api-0.1</tag>
+        <tag>hubspot-java-0.2</tag>
     </scm>
     <distributionManagement>
         <repository>
@@ -71,6 +71,7 @@
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <checkModificationExcludes>
                         <checkModificationExclude>src/test/resources/config.properties</checkModificationExclude>
+                        <checkModificationExclude>pom.xml</checkModificationExclude>
                     </checkModificationExcludes>
                 </configuration>
             </plugin>
