@@ -3,7 +3,7 @@
     <groupId>com.integrationagent</groupId>
     <artifactId>hubspot-java</artifactId>
     <packaging>jar</packaging>
-    <version>0.1</version>
+    <version>0.2-SNAPSHOT</version>
     <name>hubspot-java</name>
     <url>http://maven.apache.org</url>
     <scm>
