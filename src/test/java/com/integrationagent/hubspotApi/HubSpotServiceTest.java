@@ -4,22 +4,56 @@ import com.integrationagent.hubspotApi.domain.Contact;
 import com.integrationagent.hubspotApi.service.HubSpotService;
 import com.integrationagent.hubspotApi.utils.HubSpotException;
 import org.hamcrest.core.StringContains;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static org.junit.Assert.assertEquals;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Properties;
+
+import static org.junit.Assert.*;
 
 public class HubSpotServiceTest {
 
-    private String API_KEY = "API_KEY";
+    private static String API_KEY;
+    private static Long PORTAL_ID;
+
     private String API_HOST = "http://api.hubapi.com";
-    private Long PORTAL_ID = 000000L;
+
+    private final String testEmail = "test@mail.ru";
+    private final String testBadEmail = "test@test.test";
+    private final String testFirstname = "Testfristname";
+    private final String testLastname = "Testlastname";
 
     private HubSpotService hubSpotService = new HubSpotService(API_KEY, API_HOST);
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
+
+    @BeforeClass
+    public static void oneTimeSetUp() {
+        Properties p = new Properties();
+        try {
+            p.load(new FileReader(new File("src//test//resources//config.properties")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        API_KEY = p.getProperty("hubspot.apikey");
+        PORTAL_ID = Long.parseLong(p.getProperty("hubspot.portalid"));
+    }
+
+    @Test
+    public void createContact_Test() throws Exception {
+        Contact contact = new Contact(testEmail, testFirstname, testLastname);
+        contact = hubSpotService.createContact(contact);
+        assertNotEquals(0, contact.getId());
+        assertEquals(contact.getEmail(), hubSpotService.getContact(contact.getEmail()).getEmail());
+        hubSpotService.deleteContact(contact);
+    }
 
     @Test
     public void getContact_Email_Test() throws Exception {
@@ -31,10 +65,7 @@ public class HubSpotServiceTest {
     @Test
     public void getContact_Email_Not_Found_Test() throws Exception {
         String testEmail = "zzzdenis@reviewtogo.com";
-
-        exception.expect(HubSpotException.class);
-        exception.expectMessage(StringContains.containsString("contact does not exist"));
-        Contact contact = hubSpotService.getContact(testEmail);
+        assertNull(hubSpotService.getContact(testEmail));
     }
 
     @Test
@@ -47,18 +78,11 @@ public class HubSpotServiceTest {
     @Test
     public void getContact_Id_Not_Found_Test() throws Exception {
         long id = -777;
-
-        exception.expect(HubSpotException.class);
-        exception.expectMessage(StringContains.containsString("contact does not exist"));
-        Contact contact = hubSpotService.getContact(id);
+        assertNull(hubSpotService.getContact(id));
     }
 
     @Test
     public void updateOrCreateContact_Test() throws Exception {
-        String testEmail = "test@mail.ru";
-        String testFirstname = "Testfristname";
-        String testLastname = "Testlastname";
-
         Contact contact = new Contact(testEmail, testFirstname, testLastname);
         contact = hubSpotService.updateOrCreateContact(contact);
         assertEquals(testFirstname, hubSpotService.getContact(contact.getId()).getFirstname());
@@ -66,10 +90,6 @@ public class HubSpotServiceTest {
 
     @Test
     public void updateOrCreateContact_Bad_Email_Test() throws Exception {
-        String testEmail = "test@test.test";
-        String testFirstname = "Testfristname";
-        String testLastname = "Testlastname";
-
         Contact contact = new Contact(testEmail, testFirstname, testLastname);
 
         exception.expect(HubSpotException.class);
@@ -100,11 +120,7 @@ public class HubSpotServiceTest {
 
     @Test
     public void updateContact_Bad_Email_Test() throws Exception {
-        String testEmail = "test@test.test";
-        String testFirstname = "Testfristname";
-        String testLastname = "Testlastname";
-
-        Contact contact = new Contact(testEmail, testFirstname, testLastname).setId(79);
+        Contact contact = new Contact(testBadEmail, testFirstname, testLastname).setId(79);
 
         exception.expect(HubSpotException.class);
         exception.expectMessage(StringContains.containsString("is invalid"));
@@ -112,18 +128,21 @@ public class HubSpotServiceTest {
     }
 
     @Test
-    public void deleteContact_Test() throws Exception {
-        String testEmail = "test@mail.ru";
-        String testFirstname = "Testfristname";
-        String testLastname = "Testlastname";
+    public void updateContact_Not_Found_Test() throws Exception {
+        Contact contact = new Contact(testBadEmail, testFirstname, testLastname).setId(-777);
 
+        exception.expect(HubSpotException.class);
+        exception.expectMessage(StringContains.containsString("resource not found"));
+        hubSpotService.updateContact(contact);
+    }
+
+    @Test
+    public void deleteContact_Test() throws Exception {
         Contact contact = new Contact(testEmail, testFirstname, testLastname);
         contact = hubSpotService.updateOrCreateContact(contact);
         hubSpotService.deleteContact(contact);
 
-        exception.expect(HubSpotException.class);
-        exception.expectMessage(StringContains.containsString("contact does not exist"));
-        hubSpotService.getContact(contact.getId());
+        assertNull(hubSpotService.getContact(contact.getId()));
     }
 
     @Test
@@ -138,7 +157,6 @@ public class HubSpotServiceTest {
 
     @Test
     public void deleteContact_No_ID_Test() throws Exception {
-        String testEmail = "test@mail.ru";
         Contact contact = new Contact().setEmail(testEmail);
 
         exception.expect(HubSpotException.class);
@@ -154,10 +172,9 @@ public class HubSpotServiceTest {
 
     @Test
     public void createList_Test() throws Exception {
-        Long portalId = PORTAL_ID;
         String name = "TEST_LIST2";
 
-        Long result = hubSpotService.createList(name, portalId.toString());
+        Long result = hubSpotService.createList(name, PORTAL_ID.toString());
         assertEquals(result, hubSpotService.getList(result.toString()));
         hubSpotService.deleteList(result.toString());
     }
