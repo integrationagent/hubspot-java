@@ -2,6 +2,7 @@ package com.integrationagent.hubspotApi.service;
 
 import com.google.common.base.Strings;
 import com.integrationagent.hubspotApi.domain.Contact;
+import com.integrationagent.hubspotApi.domain.Engagement;
 import com.integrationagent.hubspotApi.utils.HubSpotException;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
@@ -9,6 +10,8 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -20,11 +23,10 @@ import java.util.Set;
 public class HubSpotService {
 
 	private String API_KEY;
-	private String API_HOST;
+	private static final String API_HOST = "https://api.hubapi.com";
 
-	public HubSpotService(String api_key, String api_host) {
+	public HubSpotService(String api_key) {
 		this.API_KEY = api_key;
-		this.API_HOST = api_host;
 	}
 
 	public Contact getContact(String email) throws HubSpotException{
@@ -105,6 +107,21 @@ public class HubSpotService {
 		} catch (HubSpotException e) {
 			throw new HubSpotException("Cannot update or create contact: " + contact.getEmail() + ". Reason: " + e.getMessage(), e);
 		}
+	}
+
+	public void updateOrCreateContacts(List<Contact> contacts) throws HubSpotException {
+
+		String url = API_HOST + "/contacts/v1/contact/batch/";
+
+		JSONArray array = new JSONArray();
+
+		for (Contact contact : contacts) {
+			JSONObject jsonObject = contact.toJson();
+			jsonObject.put("email", contact.getEmail());
+			array.put(jsonObject);
+		}
+
+		postRequest(url, array.toString());
 	}
 
 	public void deleteContact(Contact contact) throws HubSpotException {
@@ -223,37 +240,28 @@ public class HubSpotService {
 		}
 	}
 
-	public void logEngagement(String properties) throws HubSpotException {
+	public void logEngagement(Engagement engagement) throws HubSpotException {
 
 		String url = API_HOST + "/engagements/v1/engagements";
-		postRequest(url, properties);
+		postRequest(url, engagement.toString());
 	}
 
-	public void logNote(Long contactId, String body) throws HubSpotException {
-
-		JSONObject jsonObject = new JSONObject()
-					.put("engagement", new JSONObject()
-					.put("active", true)
-					.put("type", "NOTE"))
-					.put("associations", new JSONObject()
-					.put("contactIds", new JSONArray().put(contactId)))
-					.put("metadata", new JSONObject()
-					.put("body", body));
+	public void logEngagement(Long contactId, String body) throws HubSpotException {
 
 		try {
-			logEngagement(jsonObject.toString());
+			logEngagement(new Engagement(Engagement.Type.NOTE, contactId, body));
 		} catch (HubSpotException e) {
 			throw new HubSpotException("Cannot log NOTE for contact " + contactId + ". Reason: " + e.getMessage(), e);
 		}
 	}
 
 	private void checkResponse(HttpResponse<JsonNode> resp) throws HubSpotException{
-		if(204 != resp.getStatus() && 200 != resp.getStatus()){
+		if(204 != resp.getStatus() && 202 != resp.getStatus() && 200 != resp.getStatus()){
 			String message = resp.getBody().getObject().getString("message");
 			if (!Strings.isNullOrEmpty(message)) {
-				throw new HubSpotException(message, resp.getStatus());
+				throw new HubSpotException(message, resp.getBody().toString());
 			} else {
-				throw new HubSpotException(resp.getStatusText(), resp.getStatus());
+				throw new HubSpotException(resp.getBody().toString(), resp.getStatus());
 			}
 		}
 	}
