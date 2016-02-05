@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import static org.junit.Assert.*;
@@ -22,14 +24,12 @@ public class HubSpotServiceTest {
     private static String API_KEY;
     private static Long PORTAL_ID;
 
-    private String API_HOST = "http://api.hubapi.com";
-
     private final String testEmail = "test" + Instant.now().getEpochSecond() + "@mail.com";
     private final String testBadEmail = "test@test.test";
     private final String testFirstname = "Testfristname";
     private final String testLastname = "Testlastname";
 
-    private HubSpotService hubSpotService = new HubSpotService(API_KEY, API_HOST);
+    private HubSpotService hubSpotService = new HubSpotService(API_KEY);
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
@@ -178,6 +178,20 @@ public class HubSpotServiceTest {
         Long result = hubSpotService.createList(name, PORTAL_ID.toString());
         assertEquals(result, hubSpotService.getList(result.toString()));
         hubSpotService.deleteList(result.toString());
+    }
+
+    @Test
+    public void createList_Test2() throws Exception {
+        String name = "TEST_LIST2";
+
+        List<Contact> contacts = new ArrayList<>();
+
+        contacts.add(new Contact("email1@dom.com", "Garry", "Pole"));
+        contacts.add(new Contact("email2@dom.com", "Jerry", "Stroman"));
+        contacts.add(new Contact("email3@dom.com", "Fill", "Jerricson"));
+
+        hubSpotService.updateOrCreateContacts(contacts);
+
     }
 
 

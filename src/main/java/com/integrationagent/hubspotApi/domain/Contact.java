@@ -2,6 +2,8 @@ package com.integrationagent.hubspotApi.domain;
 
 import com.google.common.base.Strings;
 import com.integrationagent.hubspotApi.utils.HubSpotHelper;
+import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -73,7 +75,10 @@ public class Contact {
     }
 
     public Contact setProperty(String property, String value) {
-        this.properties.put(property, value);
+        if(value != null && !value.equals("null")){
+            this.properties.put(property, value);
+        }
+
         return this;
     }
 
@@ -82,9 +87,13 @@ public class Contact {
     }
 
     public String toJsonString() {
-        Map<String, String> properties = this.properties.entrySet().stream()
+        return toJson().toString();
+    }
+
+    public JSONObject toJson() {
+        Map<String, String> properties = this.getProperties().entrySet().stream()
                                                         .filter(p -> !p.getKey().equals("vid"))
                                                         .collect(Collectors.toMap(p -> p.getKey(), p -> p.getValue()));
-        return HubSpotHelper.mapToJsonString(properties);
+        return HubSpotHelper.mapToJson(properties);
     }
 }
