@@ -30,9 +30,9 @@ public class HubSpotHelper {
         }
     }
 
-    public static JSONObject putJsonObject(JSONObject jo, String property, String value){
-        if(!Strings.isNullOrEmpty(value) && !value.equals("null")){
-            jo.append(property, value);
+    public static JSONObject putJsonObject(JSONObject jo, String property, Object value){
+        if(!Strings.isNullOrEmpty(value + "") && !value.equals("null")){
+            jo.put(property, value);
         }
 
         return jo;

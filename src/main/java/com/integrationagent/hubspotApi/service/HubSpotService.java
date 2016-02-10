@@ -240,10 +240,15 @@ public class HubSpotService {
 		}
 	}
 
-	public void logEngagement(Engagement engagement) throws HubSpotException {
+	public Long logEngagement(Engagement engagement) throws HubSpotException {
 
 		String url = API_HOST + "/engagements/v1/engagements";
-		postRequest(url, engagement.toString());
+		JsonNode jsonNode = postRequest(url, engagement.toString());
+
+		return jsonNode.getObject()
+				.getJSONObject("engagement")
+				.getLong("id");
+
 	}
 
 	public void logEngagement(Long contactId, String body) throws HubSpotException {

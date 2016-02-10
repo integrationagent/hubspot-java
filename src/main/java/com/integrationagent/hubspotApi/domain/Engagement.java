@@ -115,10 +115,10 @@ public class Engagement {
 		HubSpotHelper.putJsonObject(engagement, "timestamp", timestamp + "");
 
 		JSONObject associations = new JSONObject();
-		HubSpotHelper.putJsonObject(associations, "contactIds", formatList(contactIds));
-		HubSpotHelper.putJsonObject(associations, "companyIds", formatList(companyIds));
-		HubSpotHelper.putJsonObject(associations, "dealIds", formatList(dealIds));
-		HubSpotHelper.putJsonObject(associations, "ownerIds", formatList(ownerIds));
+		HubSpotHelper.putJsonObject(associations, "contactIds", contactIds);
+		HubSpotHelper.putJsonObject(associations, "companyIds", companyIds);
+		HubSpotHelper.putJsonObject(associations, "dealIds", dealIds);
+		HubSpotHelper.putJsonObject(associations, "ownerIds", ownerIds);
 
 		JSONObject metadata = new JSONObject();
 		HubSpotHelper.putJsonObject(metadata, "body", body);
@@ -129,9 +129,9 @@ public class Engagement {
 				.put("metadata", metadata);
 	}
 
-	private String formatList(List<Long> list){
+	public static String formatList(List<Long> list){
 		return list.stream()
-				.map(p -> p + "")
+				.map(p -> "\"" + p + "\"")
 				.collect(Collectors.joining(", ", "[", "]"));
 	}
 
