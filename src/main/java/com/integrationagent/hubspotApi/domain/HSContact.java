@@ -8,20 +8,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class Contact {
+public class HSContact {
 
     private Map<String, String> properties = new HashMap<>();
 
-    public Contact() {
+    public HSContact() {
     }
 
-    public Contact(String email, String firstname, String lastname) {
+    public HSContact(String email, String firstname, String lastname) {
         this.properties.put("email", email);
         this.properties.put("firstname", firstname);
         this.properties.put("lastname", lastname);
     }
 
-    public Contact(long id, String email, String firstname, String lastname, Map<String, String> properties) {
+    public HSContact(long id, String email, String firstname, String lastname, Map<String, String> properties) {
         this.properties.put("vid", Long.toString(id));
         this.properties.put("email", email);
         this.properties.put("firstname", firstname);
@@ -33,7 +33,7 @@ public class Contact {
         return !Strings.isNullOrEmpty(this.properties.get("vid")) ? Long.parseLong(this.properties.get("vid")) : 0;
     }
 
-    public Contact setId(long id) {
+    public HSContact setId(long id) {
         this.properties.put("vid", Long.toString(id));
         return this;
     }
@@ -42,7 +42,7 @@ public class Contact {
         return this.properties.get("email");
     }
 
-    public Contact setEmail(String email) {
+    public HSContact setEmail(String email) {
         this.properties.put("email", email);
         return this;
     }
@@ -51,7 +51,7 @@ public class Contact {
         return this.properties.get("firstname");
     }
 
-    public Contact setFirstname(String firstname) {
+    public HSContact setFirstname(String firstname) {
         this.properties.put("firstname", firstname);
         return this;
     }
@@ -60,7 +60,7 @@ public class Contact {
         return this.properties.get("lastname");
     }
 
-    public Contact setLastname(String lastname) {
+    public HSContact setLastname(String lastname) {
         this.properties.put("lastname", lastname);
         return this;
     }
@@ -69,12 +69,12 @@ public class Contact {
         return properties;
     }
 
-    public Contact setProperties(Map<String, String> properties) {
+    public HSContact setProperties(Map<String, String> properties) {
         this.properties = properties;
         return this;
     }
 
-    public Contact setProperty(String property, String value) {
+    public HSContact setProperty(String property, String value) {
         if(value != null && !value.equals("null")){
             this.properties.put(property, value);
         }

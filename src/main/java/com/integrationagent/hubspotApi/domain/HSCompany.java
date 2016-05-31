@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * Author: dlunev
  * Date: 4/26/16 11:34 AM
  */
-public class Company {
+public class HSCompany {
 
 
 	private String name;
@@ -21,7 +21,7 @@ public class Company {
 
 	private Map<String, String> properties = new HashMap<>();
 
-	public Company setProperty(String property, String value) {
+	public HSCompany setProperty(String property, String value) {
         if(value != null && !value.equals("null")){
             this.properties.put(property, value);
         }

@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
  * Author: dlunev
  * Date: 1/30/16 11:17 AM
  */
-public class Engagement {
+public class HSEngagement {
 
 	private String body;
 	private boolean active = true;
@@ -23,7 +23,7 @@ public class Engagement {
 	private List<Long> dealIds = new ArrayList<>();
 	private List<Long> ownerIds = new ArrayList<>();
 
-	public Engagement(Type type, Long contactId, String body) {
+	public HSEngagement(Type type, Long contactId, String body) {
 		this.body = body;
 		this.type = type;
 		this.contactIds.add(contactId);
