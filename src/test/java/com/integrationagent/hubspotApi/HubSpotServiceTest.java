@@ -47,7 +47,7 @@ public class HubSpotServiceTest {
         PORTAL_ID = Long.parseLong(p.getProperty("hubspot.portalid"));
     }
 
-    @Test
+    /*@Test
     public void createContact_Test() throws Exception {
         HSContact HSContact = new HSContact(testEmail, testFirstname, testLastname);
         HSContact = hubSpotService.createContact(HSContact);
@@ -164,7 +164,7 @@ public class HubSpotServiceTest {
         exception.expectMessage(StringContains.containsString("User ID must be provided"));
         hubSpotService.deleteContact(HSContact);
     }
-
+*/
     @Test
     public void getList_Test() throws Exception {
         Long listId = 1L;

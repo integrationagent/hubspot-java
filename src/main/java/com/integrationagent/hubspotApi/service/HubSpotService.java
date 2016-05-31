@@ -36,87 +36,6 @@ public class HubSpotService {
 		this.PORTAL_ID = portalId;
 	}
 
-	public HSContact getContact(String email) throws HubSpotException{
-		String url = "/contacts/v1/contact/email/" + email + "/profile";
-
-		try {
-			JsonNode jsonBody = getRequest(url);
-			return parseContactData(jsonBody);
-		} catch (HubSpotException e) {
-			if (e.getCode() == 404) {
-				return null;
-			} else {
-				throw new HubSpotException("Cannot get contact: " + email + ". Reason: " + e.getMessage(), e);
-			}
-		}
-	}
-
-	public HSContact getContact(long id) throws HubSpotException{
-		String url = "/contacts/v1/contact/vid/" + id + "/profile";
-
-		try {
-			JsonNode jsonBody = getRequest(url);
-			return parseContactData(jsonBody);
-		} catch (HubSpotException e) {
-			if (e.getCode() == 404) {
-				return null;
-			} else {
-				throw new HubSpotException("Cannot get contact: " + id + ". Reason: " + e.getMessage(), e);
-			}
-		}
-	}
-
-	public HSContact createContact(HSContact HSContact) throws HubSpotException {
-		if (Strings.isNullOrEmpty(HSContact.getEmail())) {
-			throw new HubSpotException("User email must be provided");
-		}
-
-		String url = API_HOST + "/contacts/v1/HSContact";
-		String properties = HSContact.toJsonString();
-
-		try {
-			JsonNode jsonBody = postRequest(url, properties);
-			HSContact.setId(jsonBody.getObject().getLong("vid"));
-			return HSContact;
-		} catch (HubSpotException e) {
-			throw new HubSpotException("Cannot create HSContact: " + HSContact.getEmail() + ". Reason: " + e.getMessage(), e);
-		}
-	}
-
-	public HSContact updateContact(HSContact HSContact) throws HubSpotException {
-		if (HSContact.getId() == 0) {
-			throw new HubSpotException("User ID must be provided");
-		}
-
-		String url = API_HOST + "/contacts/v1/HSContact/vid/" + HSContact.getId() + "/profile";
-		String properties = HSContact.toJsonString();
-
-		try {
-			JsonNode jsonBody = postRequest(url, properties);
-			return HSContact;
-		} catch (HubSpotException e) {
-			throw new HubSpotException("Cannot update HSContact: " + HSContact.getId() + ". Reason: " + e.getMessage(), e);
-		}
-	}
-
-	public HSContact updateOrCreateContact(HSContact HSContact) throws HubSpotException {
-		if (Strings.isNullOrEmpty(HSContact.getEmail())) {
-			throw new HubSpotException("User email must be provided");
-		}
-
-		String url = API_HOST + "/contacts/v1/HSContact/createOrUpdate/email/" + HSContact.getEmail();
-		String properties = HSContact.toJsonString();
-
-		try {
-			JsonNode jsonBody = postRequest(url, properties);
-			HSContact.setId(jsonBody.getObject().getLong("vid"));
-			return HSContact;
-		} catch (HubSpotException e) {
-			throw new HubSpotException("Cannot update or create HSContact: " + HSContact.getEmail() + ". Reason: " + e.getMessage(), e);
-		}
-	}
-
-
 	public HSCompany createCompany(HSCompany HSCompany) throws HubSpotException {
 
 		String url = API_HOST + "/companies/v2/companies/";
@@ -130,7 +49,6 @@ public class HubSpotService {
 			throw new HubSpotException("Cannot create HSCompany: " + HSCompany + ". Reason: " + e.getMessage(), e);
 		}
 	}
-
 
 	public void addContactToCompany(String contactId, String companyId) throws HubSpotException {
 
@@ -165,18 +83,7 @@ public class HubSpotService {
 		postRequest(url, array.toString());
 	}
 
-	public void deleteContact(HSContact HSContact) throws HubSpotException {
-		if (HSContact.getId() == 0) {
-			throw new HubSpotException("User ID must be provided");
-		}
-		String url = API_HOST + "/contacts/v1/HSContact/vid/" + HSContact.getId();
 
-		try {
-			JsonNode jsonBody = deleteRequest(url);
-		} catch (HubSpotException e) {
-			throw new HubSpotException("Cannot update HSContact: " + HSContact.getId() + ". Reason: " + e.getMessage(), e);
-		}
-	}
 
 	public Long getList(String listId) throws HubSpotException {
 		String url = "/contacts/v1/lists/" + listId;
@@ -348,23 +255,5 @@ public class HubSpotService {
 		}
 	}
 
-	private HSContact parseContactData(JsonNode jsonBody) {
-		HSContact HSContact = new HSContact();
 
-		HSContact.setId(jsonBody.getObject().getLong("vid"));
-
-		JSONObject jsonProperties = jsonBody.getObject().getJSONObject("properties");
-
-		Set<String> keys = jsonProperties.keySet();
-
-		keys.stream().forEach( key ->
-				HSContact.setProperty(key,
-									jsonProperties.get(key) instanceof JSONObject ?
-											((JSONObject) jsonProperties.get(key)).getString("value") :
-											jsonProperties.get(key).toString()
-									)
-		);
-
-		return HSContact;
-	}
 }
