@@ -14,7 +14,12 @@ import com.google.common.base.Strings;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Map;
+import java.util.Properties;
 
 public class HubSpotHelper {
 
@@ -50,6 +55,13 @@ public class HubSpotHelper {
         return new JSONObject().put("properties", ja);
     }
 
+    public static Properties loadProperties() throws IOException {
+        Properties p = new Properties();
+        p.load(new FileReader(new File("src//test//resources//config.properties")));
+        return p;
+    }
 
-
+    public static String loadPropertyValue(String propertyName) throws IOException {
+        return loadProperties().getProperty(propertyName);
+    }
 }
