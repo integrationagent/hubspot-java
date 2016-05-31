@@ -1,5 +1,22 @@
 package com.integrationagent.hubspotApi.service;
 
+import com.google.common.base.Strings;
+import com.integrationagent.hubspotApi.domain.Company;
+import com.integrationagent.hubspotApi.domain.Contact;
+import com.integrationagent.hubspotApi.domain.Engagement;
+import com.integrationagent.hubspotApi.utils.HubSpotException;
+import com.integrationagent.hubspotApi.utils.HubSpotHelper;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+
 /**
  * Author: dlunev
  * Date: 2/18/15 9:15 AM
@@ -8,7 +25,7 @@ package com.integrationagent.hubspotApi.service;
 
 public class HubSpotService {
 
-	/*private String API_KEY;
+	private String API_KEY;
 	private String PORTAL_ID;
 	private static final String API_HOST = "https://api.hubapi.com";
 
@@ -207,6 +224,75 @@ public class HubSpotService {
 		putRequest("/email/public/v1/subscriptions/" + email, "{\"unsubscribeFromAll\" :true}");
 	}
 
+	public JsonNode putRequest(String url, String properties) throws HubSpotException {
+		try {
+			HttpResponse<JsonNode> resp = Unirest
+                    .put(API_HOST + url)
+                    .header("accept", "application/json")
+					.header("Content-Type", "application/json")
+					.queryString("hapikey", API_KEY)
+                    .body(properties)
+					.asJson();
+
+			if(204 != resp.getStatus() && 202 != resp.getStatus() && 200 != resp.getStatus()){
+				throw new HubSpotException(new JSONObject(resp.getBody().toString()).toString(2));
+			}
+
+			return resp.getBody();
+		} catch (UnirestException e) {
+			throw new HubSpotException("Can not get data", e);
+		}
+	}
+
+	public JsonNode getRequest(String url) throws HubSpotException {
+		try {
+			HttpResponse<JsonNode> resp = Unirest
+                    .get(API_HOST + url)
+                    .queryString("hapikey", API_KEY)
+                        .asJson();
+
+			checkResponse(resp);
+
+			return resp.getBody();
+		} catch (UnirestException e) {
+			throw new HubSpotException("Can not get data", e);
+		}
+	}
+
+	public JsonNode postRequest(String url, String properties) throws HubSpotException {
+		try {
+			HttpResponse<JsonNode> resp = Unirest
+					.post(url)
+					.queryString("hapikey", API_KEY)
+					.header("accept", "application/json")
+					.header("Content-Type", "application/json")
+                    .body(properties)
+					.asJson();
+
+			checkResponse(resp);
+
+			return resp.getBody();
+		} catch (UnirestException e) {
+			throw new HubSpotException("Cannot make a request: \n" + properties, e);
+		}
+	}
+
+	public JsonNode deleteRequest(String url) throws HubSpotException {
+		try {
+			HttpResponse<JsonNode> resp = Unirest
+					.delete(url)
+					.queryString("hapikey", API_KEY)
+					.asJson();
+
+			checkResponse(resp);
+
+			return resp.getBody();
+		} catch (UnirestException e) {
+			throw new HubSpotException("Cannot make delete request", e);
+		}
+
+	}
+
 	public void assignList(Long listId, Long contactId) throws HubSpotException {
 		String url = API_HOST + "/contacts/v1/lists/" + listId + "/add";
 
@@ -252,7 +338,35 @@ public class HubSpotService {
 			throw new HubSpotException("Cannot log NOTE for contact " + contactId + ". Reason: " + e.getMessage(), e);
 		}
 	}
-	*/
 
+	private void checkResponse(HttpResponse<JsonNode> resp) throws HubSpotException{
+		if(204 != resp.getStatus() && 202 != resp.getStatus() && 200 != resp.getStatus()){
+			String message = resp.getBody().getObject().getString("message");
+			if (!Strings.isNullOrEmpty(message)) {
+				throw new HubSpotException(new JSONObject(resp.getBody().toString()).toString(2));
+			} else {
+				throw new HubSpotException(new JSONObject(resp.getBody().toString()).toString(2), resp.getStatus());
+			}
+		}
+	}
 
+	private Contact parseContactData(JsonNode jsonBody) {
+		Contact contact = new Contact();
+
+		contact.setId(jsonBody.getObject().getLong("vid"));
+
+		JSONObject jsonProperties = jsonBody.getObject().getJSONObject("properties");
+
+		Set<String> keys = jsonProperties.keySet();
+
+		keys.stream().forEach( key ->
+				contact.setProperty(key,
+									jsonProperties.get(key) instanceof JSONObject ?
+											((JSONObject) jsonProperties.get(key)).getString("value") :
+											jsonProperties.get(key).toString()
+									)
+		);
+
+		return contact;
+	}
 }
