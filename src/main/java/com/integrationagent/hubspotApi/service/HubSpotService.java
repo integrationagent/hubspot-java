@@ -1,9 +1,11 @@
 package com.integrationagent.hubspotApi.service;
 
 import com.google.common.base.Strings;
+import com.integrationagent.hubspotApi.domain.Company;
 import com.integrationagent.hubspotApi.domain.Contact;
 import com.integrationagent.hubspotApi.domain.Engagement;
 import com.integrationagent.hubspotApi.utils.HubSpotException;
+import com.integrationagent.hubspotApi.utils.HubSpotHelper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -11,6 +13,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -23,10 +26,16 @@ import java.util.Set;
 public class HubSpotService {
 
 	private String API_KEY;
+	private String PORTAL_ID;
 	private static final String API_HOST = "https://api.hubapi.com";
 
 	public HubSpotService(String api_key) {
 		this.API_KEY = api_key;
+	}
+
+	public HubSpotService(String api_key, String portalId) {
+		this.API_KEY = api_key;
+		this.PORTAL_ID = portalId;
 	}
 
 	public Contact getContact(String email) throws HubSpotException{
@@ -109,6 +118,40 @@ public class HubSpotService {
 		}
 	}
 
+
+	public Company createCompany(Company company) throws HubSpotException {
+
+		String url = API_HOST + "/companies/v2/companies/";
+		String properties = company.toJsonString();
+
+		try {
+			JsonNode jsonBody = postRequest(url, properties);
+			company.setId(jsonBody.getObject().getLong("companyId"));
+			return company;
+		} catch (HubSpotException e) {
+			throw new HubSpotException("Cannot create company: " + company + ". Reason: " + e.getMessage(), e);
+		}
+	}
+
+
+	public void addContactToCompany(String contactId, String companyId) throws HubSpotException {
+
+		String url = API_HOST + "/companies/v2/companies/" + companyId + "/contacts/" + contactId;
+
+		try {
+			HttpResponse<JsonNode> resp = Unirest
+					.put(url)
+					.queryString("hapikey", API_KEY)
+					.header("accept", "application/json")
+					.header("Content-Type", "application/json")
+					.body("")
+					.asJson();
+
+		} catch (UnirestException e) {
+			throw new HubSpotException("", e);
+		}
+	}
+
 	public void updateOrCreateContacts(List<Contact> contacts) throws HubSpotException {
 
 		String url = API_HOST + "/contacts/v1/contact/batch/";
@@ -173,6 +216,31 @@ public class HubSpotService {
 			JsonNode jsonNode = deleteRequest(url);
 		} catch (HubSpotException e) {
 			throw new HubSpotException("Cannot delete list: " + listId + ". Reason: " + e.getMessage(), e);
+		}
+	}
+
+	public void unsubscribeFromAll(String email) throws HubSpotException{
+
+		putRequest("/email/public/v1/subscriptions/" + email, "{\"unsubscribeFromAll\" :true}");
+	}
+
+	public JsonNode putRequest(String url, String properties) throws HubSpotException {
+		try {
+			HttpResponse<JsonNode> resp = Unirest
+                    .put(API_HOST + url)
+                    .header("accept", "application/json")
+					.header("Content-Type", "application/json")
+					.queryString("hapikey", API_KEY)
+                    .body(properties)
+					.asJson();
+
+			if(204 != resp.getStatus() && 202 != resp.getStatus() && 200 != resp.getStatus()){
+				throw new HubSpotException(new JSONObject(resp.getBody().toString()).toString(2));
+			}
+
+			return resp.getBody();
+		} catch (UnirestException e) {
+			throw new HubSpotException("Can not get data", e);
 		}
 	}
 
@@ -251,6 +319,17 @@ public class HubSpotService {
 
 	}
 
+	public void deleteEngagement(Long engagementId) throws UnirestException {
+
+		String url = API_HOST + "/engagements/v1/engagements/" + engagementId;
+		Unirest
+					.delete(url)
+					.queryString("hapikey", API_KEY)
+					.header("accept", "application/json")
+					.header("Content-Type", "application/json")
+                    .asJson();
+	}
+
 	public void logEngagement(Long contactId, String body) throws HubSpotException {
 
 		try {
@@ -264,9 +343,9 @@ public class HubSpotService {
 		if(204 != resp.getStatus() && 202 != resp.getStatus() && 200 != resp.getStatus()){
 			String message = resp.getBody().getObject().getString("message");
 			if (!Strings.isNullOrEmpty(message)) {
-				throw new HubSpotException(message, resp.getBody().toString());
+				throw new HubSpotException(new JSONObject(resp.getBody().toString()).toString(2));
 			} else {
-				throw new HubSpotException(resp.getBody().toString(), resp.getStatus());
+				throw new HubSpotException(new JSONObject(resp.getBody().toString()).toString(2), resp.getStatus());
 			}
 		}
 	}
