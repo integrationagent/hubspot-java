@@ -1,23 +1,14 @@
 package com.integrationagent.hubspotApi;
 
-import com.integrationagent.hubspotApi.domain.HSContact;
-import com.integrationagent.hubspotApi.service.HubSpotService;
-import com.integrationagent.hubspotApi.utils.HubSpotException;
-import org.hamcrest.core.StringContains;
 import org.junit.BeforeClass;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
-
-import static org.junit.Assert.*;
 
 public class HubSpotServiceTest {
 
@@ -28,8 +19,6 @@ public class HubSpotServiceTest {
     private final String testBadEmail = "test@test.test";
     private final String testFirstname = "Testfristname";
     private final String testLastname = "Testlastname";
-
-    private HubSpotService hubSpotService = new HubSpotService(API_KEY);
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
@@ -165,7 +154,7 @@ public class HubSpotServiceTest {
         hubSpotService.deleteContact(HSContact);
     }
 */
-    @Test
+    /*@Test
     public void getList_Test() throws Exception {
         Long listId = 1L;
         assertEquals(listId,hubSpotService.getList(listId.toString()));
@@ -192,7 +181,7 @@ public class HubSpotServiceTest {
 
         hubSpotService.updateOrCreateContacts(HSContacts);
 
-    }
+    }*/
 
 
 }

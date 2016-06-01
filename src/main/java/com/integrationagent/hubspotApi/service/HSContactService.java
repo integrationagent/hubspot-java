@@ -4,15 +4,17 @@ import com.google.common.base.Strings;
 import com.integrationagent.hubspotApi.domain.HSContact;
 import com.integrationagent.hubspotApi.utils.HubSpotException;
 import com.mashape.unirest.http.JsonNode;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.List;
 import java.util.Set;
 
-public class HSContactGateway {
+public class HSContactService {
 
     private HttpService httpService;
 
-    public HSContactGateway(HttpService httpService) {
+    public HSContactService(HttpService httpService) {
         this.httpService = httpService;
     }
 
@@ -31,12 +33,11 @@ public class HSContactGateway {
             throw new HubSpotException("User email must be provided");
         }
 
-        String url = "/contacts/v1/HSContact";
+        String url = "/contacts/v1/contact";
 
         JsonNode jsonBody = httpService.postRequest(url, HSContact.toJsonString());
         HSContact.setId(jsonBody.getObject().getLong("vid"));
         return HSContact;
-
     }
 
     public HSContact update(HSContact contact) throws HubSpotException {
@@ -44,7 +45,7 @@ public class HSContactGateway {
             throw new HubSpotException("User ID must be provided");
         }
 
-        String url = "/contacts/v1/HSContact/vid/" + contact.getId() + "/profile";
+        String url = "/contacts/v1/contact/vid/" + contact.getId() + "/profile";
         JsonNode jsonBody = httpService.postRequest(url, contact.toJsonString());
         return contact;
     }
@@ -54,23 +55,32 @@ public class HSContactGateway {
             throw new HubSpotException("User email must be provided");
         }
 
-        String url = "/contacts/v1/HSContact/createOrUpdate/email/" + HSContact.getEmail();
+        String url = "/contacts/v1/contact/createOrUpdate/email/" + HSContact.getEmail();
         JsonNode jsonBody = httpService.postRequest(url, HSContact.toJsonString());
         HSContact.setId(jsonBody.getObject().getLong("vid"));
         return HSContact;
+    }
+
+    public void updateOrCreateContacts(List<HSContact> HSContacts) throws HubSpotException {
+        String url = "/contacts/v1/contact/batch/";
+        JSONArray array = new JSONArray();
+
+        for (HSContact HSContact : HSContacts) {
+            JSONObject jsonObject = HSContact.toJson();
+            jsonObject.put("email", HSContact.getEmail());
+            array.put(jsonObject);
+        }
+
+        httpService.postRequest(url, array.toString());
     }
 
     public void delete(HSContact contact) throws HubSpotException {
         if (contact.getId() == 0) {
             throw new HubSpotException("User ID must be provided");
         }
-        String url = "/contacts/v1/HSContact/vid/" + contact.getId();
+        String url = "/contacts/v1/contact/vid/" + contact.getId();
 
-        try {
-            JsonNode jsonBody = httpService.deleteRequest(url);
-        } catch (HubSpotException e) {
-            throw new HubSpotException("Cannot update HSContact: " + contact.getId() + ". Reason: " + e.getMessage(), e);
-        }
+        httpService.deleteRequest(url);
     }
 
     private HSContact parseContactData(JsonNode jsonBody) {

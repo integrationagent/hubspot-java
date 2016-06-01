@@ -6,6 +6,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.json.JSONObject;
 
 public class HttpService {
     
@@ -29,7 +30,7 @@ public class HttpService {
 
             return resp.getBody();
         } catch (UnirestException e) {
-            throw new HubSpotException("Can not get data", e);
+            throw new HubSpotException("Can not get data\n URL:" + url, e);
         }
     }
 
@@ -62,9 +63,29 @@ public class HttpService {
 
             return resp.getBody();
         } catch (UnirestException e) {
-            throw new HubSpotException("Cannot make delete request", e);
+            throw new HubSpotException("Cannot make delete request: \n URL: " + url, e);
         }
 
+    }
+
+    public JsonNode putRequest(String url, String properties) throws HubSpotException {
+        try {
+            HttpResponse<JsonNode> resp = Unirest
+                    .put(apiBase + url)
+                    .header("accept", "application/json")
+                    .header("Content-Type", "application/json")
+                    .queryString("hapikey", apiKey)
+                    .body(properties)
+                    .asJson();
+
+            if(204 != resp.getStatus() && 202 != resp.getStatus() && 200 != resp.getStatus()){
+                throw new HubSpotException(new JSONObject(resp.getBody().toString()).toString(2));
+            }
+
+            return resp.getBody();
+        } catch (UnirestException e) {
+            throw new HubSpotException("Can not get data", e);
+        }
     }
 
     private void checkResponse(HttpResponse<JsonNode> resp) throws HubSpotException {
