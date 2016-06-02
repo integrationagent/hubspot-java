@@ -13,11 +13,11 @@ public class HSEngagementService {
         this.httpService = httpService;
     }
 
-     public Long log(Long contactId, String body) throws HubSpotException {
+     public Long create(Long contactId, String body) throws HubSpotException {
         HSEngagement engagement = new HSEngagement(HSEngagement.Type.NOTE, contactId, body);
 
         String url = "/engagements/v1/engagements";
-        JsonNode jsonNode = httpService.postRequest(url, engagement.toString());
+        JsonNode jsonNode = httpService.postRequest(url, engagement.toString(), null);
 
         return jsonNode.getObject().getJSONObject("HSEngagement").getLong("id");
     }

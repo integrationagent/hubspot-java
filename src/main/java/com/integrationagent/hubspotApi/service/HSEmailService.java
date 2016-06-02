@@ -2,11 +2,11 @@ package com.integrationagent.hubspotApi.service;
 
 import com.integrationagent.hubspotApi.utils.HubSpotException;
 
-public class HSSubscriptionsService {
+public class HSEmailService {
 
     private HttpService httpService;
 
-    public HSSubscriptionsService(HttpService httpService) {
+    public HSEmailService(HttpService httpService) {
         this.httpService = httpService;
     }
 

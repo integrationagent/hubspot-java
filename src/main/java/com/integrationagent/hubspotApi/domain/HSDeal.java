@@ -1,4 +1,4 @@
 package com.integrationagent.hubspotApi.domain;
 
-public class HSForms {
+public class HSDeal {
 }

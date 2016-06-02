@@ -27,7 +27,7 @@ public class HSListService {
                 .put("portalId", portalId)
                 .toString();
 
-        JsonNode jsonNode = httpService.postRequest(url, properties);
+        JsonNode jsonNode = httpService.postRequest(url, properties, null);
         return jsonNode.getObject().getLong("listId");
     }
 
@@ -39,6 +39,6 @@ public class HSListService {
     public void assign(Long listId, Long contactId) throws HubSpotException {
         String url = "/contacts/v1/lists/" + listId + "/add";
         String properties = new JSONObject().put("vids", new JSONArray().put(contactId)).toString();
-        httpService.postRequest(url, properties);
+        httpService.postRequest(url, properties, null);
     }
 }

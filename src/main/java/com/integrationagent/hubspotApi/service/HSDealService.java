@@ -1,10 +1,11 @@
 package com.integrationagent.hubspotApi.service;
 
-public class HSFormsService {
+public class HSDealService {
 
     private HttpService httpService;
 
-    public HSFormsService(HttpService httpService) {
+    public HSDealService(HttpService httpService) {
         this.httpService = httpService;
     }
+
 }

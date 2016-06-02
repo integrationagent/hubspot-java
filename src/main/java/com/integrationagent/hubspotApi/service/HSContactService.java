@@ -18,12 +18,12 @@ public class HSContactService {
         this.httpService = httpService;
     }
 
-    public HSContact findByEmail(String email) throws HubSpotException {
+    public HSContact getByEmail(String email) throws HubSpotException {
         String url = "/contacts/v1/contact/email/" + email + "/profile";
         return parseContactData(httpService.getRequest(url));
     }
 
-    public HSContact findById(long id) throws HubSpotException{
+    public HSContact getByID(long id) throws HubSpotException{
         String url = "/contacts/v1/contact/vid/" + id + "/profile";
         return parseContactData(httpService.getRequest(url));
     }
@@ -35,7 +35,7 @@ public class HSContactService {
 
         String url = "/contacts/v1/contact";
 
-        JsonNode jsonBody = httpService.postRequest(url, HSContact.toJsonString());
+        JsonNode jsonBody = httpService.postRequest(url, HSContact.toJsonString(), null);
         HSContact.setId(jsonBody.getObject().getLong("vid"));
         return HSContact;
     }
@@ -46,7 +46,7 @@ public class HSContactService {
         }
 
         String url = "/contacts/v1/contact/vid/" + contact.getId() + "/profile";
-        JsonNode jsonBody = httpService.postRequest(url, contact.toJsonString());
+        JsonNode jsonBody = httpService.postRequest(url, contact.toJsonString(), null);
         return contact;
     }
 
@@ -56,7 +56,7 @@ public class HSContactService {
         }
 
         String url = "/contacts/v1/contact/createOrUpdate/email/" + HSContact.getEmail();
-        JsonNode jsonBody = httpService.postRequest(url, HSContact.toJsonString());
+        JsonNode jsonBody = httpService.postRequest(url, HSContact.toJsonString(), null);
         HSContact.setId(jsonBody.getObject().getLong("vid"));
         return HSContact;
     }
@@ -71,7 +71,7 @@ public class HSContactService {
             array.put(jsonObject);
         }
 
-        httpService.postRequest(url, array.toString());
+        httpService.postRequest(url, array.toString(), null);
     }
 
     public void delete(HSContact contact) throws HubSpotException {

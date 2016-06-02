@@ -11,21 +11,21 @@ import java.util.Set;
 
 public class HSCompanyService {
 
-	private HttpService httpService;
+    private HttpService httpService;
 
-	public HSCompanyService(HttpService httpService) {
-		this.httpService = httpService;
-	}
+    public HSCompanyService(HttpService httpService) {
+        this.httpService = httpService;
+    }
 
 	public HSCompany create(HSCompany HSCompany) throws HubSpotException {
 		String url = "/companies/v2/companies/";
-		JsonNode jsonBody = httpService.postRequest(url, HSCompany.toJsonString());
+		JsonNode jsonBody = httpService.postRequest(url, HSCompany.toJsonString(), null);
 		HSCompany.setId(jsonBody.getObject().getLong("companyId"));
 		return HSCompany;
 
-	}
+    }
 
-	public void addContactToCompany(String contactId, String companyId) throws HubSpotException {
+	public void addContact(String contactId, String companyId) throws HubSpotException {
 		String url = "/companies/v2/companies/" + companyId + "/contacts/" + contactId;
 		JsonNode jsonNode = httpService.putRequest(url, "");
 	}

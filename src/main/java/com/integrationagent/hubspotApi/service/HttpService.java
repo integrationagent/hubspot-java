@@ -34,13 +34,16 @@ public class HttpService {
         }
     }
 
-    public JsonNode postRequest(String url, String properties) throws HubSpotException {
+    public JsonNode postRequest(String url, String properties, String contentType) throws HubSpotException {
+        if (Strings.isNullOrEmpty(contentType)) {
+            contentType = "application/json";
+        }
         try {
             HttpResponse<JsonNode> resp = Unirest
                     .post(apiBase + url)
                     .queryString("hapikey", apiKey)
                     .header("accept", "application/json")
-                    .header("Content-Type", "application/json")
+                    .header("Content-Type", contentType)
                     .body(properties)
                     .asJson();
 

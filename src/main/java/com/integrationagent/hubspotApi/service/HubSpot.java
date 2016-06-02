@@ -9,28 +9,32 @@ public class HubSpot {
         httpService = new HttpService(apiKey, apiBase);
     }
 
+    public HSCompanyService company() {
+        return new HSCompanyService(httpService);
+    }
+
     public HSContactService contact() {
         return new HSContactService(httpService);
     }
 
-    public HSCompanyService company() {
-        return new HSCompanyService(httpService);
+    public HSDealService deal() {
+        return new HSDealService(httpService);
+    }
+
+    public HSEmailService email() {
+        return new HSEmailService(httpService);
     }
 
     public HSEngagementService engagement() {
         return new HSEngagementService(httpService);
     }
 
-    public HSFormsService form() {
-        return new HSFormsService(httpService);
+    public HSFormService form() {
+        return new HSFormService(httpService);
     }
 
     public HSListService list() {
         return new HSListService(httpService);
-    }
-
-    public HSSubscriptionsService subscription() {
-        return new HSSubscriptionsService(httpService);
     }
 
     public HSWorkflowService workflow() {
