@@ -92,8 +92,14 @@ public class HttpService {
     }
 
     private void checkResponse(HttpResponse<JsonNode> resp) throws HubSpotException {
-        if(204 != resp.getStatus() && 200 != resp.getStatus()){
-            String message = resp.getBody().getObject().getString("message");
+        if(204 != resp.getStatus() && 200 != resp.getStatus() && 202 != resp.getStatus()){
+            String message;
+            if (resp.getStatus() == 404) {
+                message = resp.getStatusText();
+            } else {
+                message = resp.getBody().getObject().getString("message");
+            }
+
             if (!Strings.isNullOrEmpty(message)) {
                 throw new HubSpotException(message, resp.getStatus());
             } else {

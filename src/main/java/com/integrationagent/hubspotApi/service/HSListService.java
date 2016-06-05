@@ -13,10 +13,18 @@ public class HSListService {
         this.httpService = httpService;
     }
 
-    public Long findById(String listId) throws HubSpotException {
+    public Long getByID(String listId) throws HubSpotException {
         String url = "/contacts/v1/lists/" + listId;
-        JsonNode jsonNode = httpService.getRequest(url);
-        return jsonNode.getObject().getLong("listId");
+        try {
+            JsonNode jsonNode = httpService.getRequest(url);
+            return jsonNode.getObject().getLong("listId");
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("Not Found")) {
+                return null;
+            } else {
+                throw e;
+            }
+        }
     }
 
     public Long create(String name, String portalId) throws HubSpotException {

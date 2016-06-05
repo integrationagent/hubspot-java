@@ -20,12 +20,24 @@ public class HSContactService {
 
     public HSContact getByEmail(String email) throws HubSpotException {
         String url = "/contacts/v1/contact/email/" + email + "/profile";
-        return parseContactData(httpService.getRequest(url));
+        return getContact(url);
     }
 
     public HSContact getByID(long id) throws HubSpotException{
         String url = "/contacts/v1/contact/vid/" + id + "/profile";
-        return parseContactData(httpService.getRequest(url));
+        return getContact(url);
+    }
+
+    private HSContact getContact(String url) throws HubSpotException {
+        try {
+            return parseContactData(httpService.getRequest(url));
+        } catch (HubSpotException e) {
+            if (e.getMessage().equals("Not Found")) {
+                return null;
+            } else {
+                throw e;
+            }
+        }
     }
 
     public HSContact create(HSContact HSContact) throws HubSpotException {

@@ -14,7 +14,7 @@ public class HSForm {
 
     List<Field> fields = new ArrayList<>();
 
-    public class Field{
+    public class Field {
         String name;
         String label;
         String type;
