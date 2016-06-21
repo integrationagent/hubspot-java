@@ -19,7 +19,7 @@ public class HSCompanyService {
 
 	public HSCompany create(HSCompany HSCompany) throws HubSpotException {
 		String url = "/companies/v2/companies/";
-		JsonNode jsonBody = httpService.postRequest(url, HSCompany.toJsonString(), null);
+		JsonNode jsonBody = httpService.postRequest(url, HSCompany.toJsonString());
 		HSCompany.setId(jsonBody.getObject().getLong("companyId"));
 		return HSCompany;
 

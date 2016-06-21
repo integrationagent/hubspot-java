@@ -34,6 +34,10 @@ public class HttpService {
         }
     }
 
+    public JsonNode postRequest(String url, String properties) throws HubSpotException {
+        return postRequest(url, properties, "application/json");
+    }
+
     public JsonNode postRequest(String url, String properties, String contentType) throws HubSpotException {
         if (Strings.isNullOrEmpty(contentType)) {
             contentType = "application/json";

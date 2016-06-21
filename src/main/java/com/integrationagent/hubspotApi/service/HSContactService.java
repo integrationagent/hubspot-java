@@ -83,7 +83,7 @@ public class HSContactService {
             array.put(jsonObject);
         }
 
-        httpService.postRequest(url, array.toString(), null);
+        httpService.postRequest(url, array.toString());
     }
 
     public void delete(HSContact contact) throws HubSpotException {
