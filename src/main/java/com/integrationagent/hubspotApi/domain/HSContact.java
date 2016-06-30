@@ -69,6 +69,11 @@ public class HSContact {
         return properties;
     }
 
+    public HSContact addProperties(Map<String, String> properties) {
+        this.properties.putAll(properties);
+        return this;
+    }
+
     public HSContact setProperties(Map<String, String> properties) {
         this.properties = properties;
         return this;
