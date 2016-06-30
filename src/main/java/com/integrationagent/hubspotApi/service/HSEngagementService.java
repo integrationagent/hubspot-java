@@ -19,7 +19,7 @@ public class HSEngagementService {
         String url = "/engagements/v1/engagements";
         JsonNode jsonNode = httpService.postRequest(url, engagement.toString(), null);
 
-        return jsonNode.getObject().getJSONObject("HSEngagement").getLong("id");
+        return jsonNode.getObject().getJSONObject("engagement").getLong("id");
     }
 
     public void delete(Long engagementId) throws UnirestException, HubSpotException {
