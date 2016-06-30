@@ -4,7 +4,7 @@ import com.google.common.base.Strings;
 import com.integrationagent.hubspotApi.domain.Company;
 import com.integrationagent.hubspotApi.domain.Contact;
 import com.integrationagent.hubspotApi.domain.Engagement;
-import com.integrationagent.hubspotApi.utils.HubSpotException;
+import com.integrationagent.hubspotApi.utils.*;
 import com.integrationagent.hubspotApi.utils.HubSpotHelper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;

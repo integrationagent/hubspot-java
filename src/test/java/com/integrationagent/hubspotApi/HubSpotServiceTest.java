@@ -1,11 +1,7 @@
 package com.integrationagent.hubspotApi;
 
-import com.integrationagent.hubspotApi.domain.HSContact;
-import com.integrationagent.hubspotApi.service.HubSpotService;
+import com.integrationagent.hubspotApi.domain.Contact;
 import com.integrationagent.hubspotApi.utils.HubSpotException;
-import com.integrationagent.hubspotApi.utils.HubSpotHelper;
-import org.hamcrest.core.StringContains;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,16 +38,16 @@ public class HubSpotServiceTest {
 
     @Test
     public void createContact_Test() throws Exception {
-        HSContact contact = new HSContact(testEmail, testFirstname, testLastname);
-        contact = HSContact.create(contact);
+        Contact contact = new Contact(testEmail, testFirstname, testLastname);
+        contact = Contact.create(contact);
         assertNotEquals(0, contact.getId());
-        assertEquals(contact.getEmail(), HSContact.retrieveByEmail(contact.getEmail()).getEmail());
-        HSContact.delete(contact);
+        assertEquals(contact.getEmail(), Contact.retrieveByEmail(contact.getEmail()).getEmail());
+        Contact.delete(contact);
     }
 
     @Test
     public void getContact_Email_Test() throws Exception {
-        HSContact contact = HSContact.retrieveByEmail("denis@reviewtogo.com");
+        Contact contact = Contact.retrieveByEmail("denis@reviewtogo.com");
         assertEquals(79, contact.getId());
         assertEquals("Garry", contact.getFirstname());
     }

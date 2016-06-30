@@ -2,7 +2,7 @@ package com.integrationagent.hubspotApi.domain;
 
 import com.google.common.base.Strings;
 import com.integrationagent.hubspotApi.service.HttpService;
-import com.integrationagent.hubspotApi.utils.HubSpotException;
+import com.integrationagent.hubspotApi.utils.*;
 import com.integrationagent.hubspotApi.utils.HubSpotHelper;
 import com.mashape.unirest.http.JsonNode;
 import org.json.JSONObject;
@@ -12,20 +12,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class HSContact {
+public class Contact {
 
     private Map<String, String> properties = new HashMap<>();
 
-    public HSContact() {
+    public Contact() {
     }
 
-    public HSContact(String email, String firstname, String lastname) {
+    public Contact(String email, String firstname, String lastname) {
         this.properties.put("email", email);
         this.properties.put("firstname", firstname);
         this.properties.put("lastname", lastname);
     }
 
-    public HSContact(long id, String email, String firstname, String lastname, Map<String, String> properties) {
+    public Contact(long id, String email, String firstname, String lastname, Map<String, String> properties) {
         this.properties.put("vid", Long.toString(id));
         this.properties.put("email", email);
         this.properties.put("firstname", firstname);
@@ -37,7 +37,7 @@ public class HSContact {
         return !Strings.isNullOrEmpty(this.properties.get("vid")) ? Long.parseLong(this.properties.get("vid")) : 0;
     }
 
-    public HSContact setId(long id) {
+    public Contact setId(long id) {
         this.properties.put("vid", Long.toString(id));
         return this;
     }
@@ -46,7 +46,7 @@ public class HSContact {
         return this.properties.get("email");
     }
 
-    public HSContact setEmail(String email) {
+    public Contact setEmail(String email) {
         this.properties.put("email", email);
         return this;
     }
@@ -55,7 +55,7 @@ public class HSContact {
         return this.properties.get("firstname");
     }
 
-    public HSContact setFirstname(String firstname) {
+    public Contact setFirstname(String firstname) {
         this.properties.put("firstname", firstname);
         return this;
     }
@@ -64,7 +64,7 @@ public class HSContact {
         return this.properties.get("lastname");
     }
 
-    public HSContact setLastname(String lastname) {
+    public Contact setLastname(String lastname) {
         this.properties.put("lastname", lastname);
         return this;
     }
@@ -73,12 +73,17 @@ public class HSContact {
         return properties;
     }
 
-    public HSContact setProperties(Map<String, String> properties) {
+    public Contact setProperties(Map<String, String> properties) {
         this.properties = properties;
         return this;
     }
 
-    public HSContact setProperty(String property, String value) {
+    public Contact addProperties(Map<String, String> properties) {
+        this.properties.putAll(properties);
+        return this;
+    }
+
+    public Contact setProperty(String property, String value) {
         this.properties.put(property, value);
         return this;
     }
@@ -94,22 +99,22 @@ public class HSContact {
         return HubSpotHelper.mapToJsonString(properties);
     }
 
-    public static HSContact retrieveByEmail(String email) throws HubSpotException {
+    public static Contact retrieveByEmail(String email) throws HubSpotException {
         String url = "/contacts/v1/contact/email/" + email + "/profile";
         return getContact(url);
     }
 
-    public static HSContact retrieveById(long id) throws HubSpotException {
+    public static Contact retrieveById(long id) throws HubSpotException {
         String url = "/contacts/v1/contact/vid/" + id + "/profile";
         return getContact(url);
     }
 
-    private static HSContact getContact(String url) throws HubSpotException {
+    private static Contact getContact(String url) throws HubSpotException {
         JsonNode jsonBody = HttpService.getRequest(url);
         return parseContactData(jsonBody);
     }
 
-    public static HSContact create(HSContact contact) throws HubSpotException {
+    public static Contact create(Contact contact) throws HubSpotException {
         if (Strings.isNullOrEmpty(contact.getEmail())) {
             throw new HubSpotException("User email must be provided");
         }
@@ -126,7 +131,7 @@ public class HSContact {
         }
     }
 
-    public static HSContact update(HSContact contact) throws HubSpotException {
+    public static Contact update(Contact contact) throws HubSpotException {
         if (contact.getId() == 0) {
             throw new HubSpotException("User ID must be provided");
         }
@@ -142,7 +147,7 @@ public class HSContact {
         }
     }
 
-    public static HSContact updateOrCreate(HSContact contact) throws HubSpotException {
+    public static Contact updateOrCreate(Contact contact) throws HubSpotException {
         if (Strings.isNullOrEmpty(contact.getEmail())) {
             throw new HubSpotException("User email must be provided");
         }
@@ -159,7 +164,7 @@ public class HSContact {
         }
     }
 
-    public static void delete(HSContact contact) throws HubSpotException {
+    public static void delete(Contact contact) throws HubSpotException {
         if (contact.getId() == 0) {
             throw new HubSpotException("User ID must be provided");
         }
@@ -172,8 +177,8 @@ public class HSContact {
         }
     }
 
-    private static HSContact parseContactData(JsonNode jsonBody) {
-        HSContact contact = new HSContact();
+    private static Contact parseContactData(JsonNode jsonBody) {
+        Contact contact = new Contact();
 
         contact.setId(jsonBody.getObject().getLong("vid"));
 
@@ -190,5 +195,10 @@ public class HSContact {
         );
 
         return contact;
+    }
+
+
+    public JSONObject toJson() {
+        return null;
     }
 }

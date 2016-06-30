@@ -2,7 +2,7 @@ package com.integrationagent.hubspotApi.service;
 
 import com.google.common.base.Strings;
 import com.integrationagent.hubspotApi.HubSpot;
-import com.integrationagent.hubspotApi.utils.HubSpotException;
+import com.integrationagent.hubspotApi.utils.*;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
