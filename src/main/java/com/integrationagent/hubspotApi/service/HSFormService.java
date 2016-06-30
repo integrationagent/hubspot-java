@@ -3,7 +3,6 @@ package com.integrationagent.hubspotApi.service;
 import com.integrationagent.hubspotApi.domain.HSForm;
 import com.integrationagent.hubspotApi.utils.HubSpotException;
 import com.integrationagent.hubspotApi.utils.UrlMap;
-import com.mashape.unirest.http.JsonNode;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -23,12 +22,10 @@ public class HSFormService {
 
         List<HSForm> forms = new ArrayList<>();
 
-        JsonNode jsonBody = httpService.getRequest(url);
+        JSONArray jsonArray = (JSONArray)httpService.getRequest(url);
 
-        JSONArray properties = jsonBody.getArray();
-
-        for (int i = 0; i < properties.length(); i++) {
-            JSONObject jsonObject = properties.getJSONObject(i);
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
 
             HSForm hsForm = new HSForm();
 

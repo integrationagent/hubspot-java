@@ -3,7 +3,6 @@ package com.integrationagent.hubspotApi.service;
 import com.google.common.base.Strings;
 import com.integrationagent.hubspotApi.domain.HSContact;
 import com.integrationagent.hubspotApi.utils.HubSpotException;
-import com.mashape.unirest.http.JsonNode;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -30,7 +29,7 @@ public class HSContactService {
 
     private HSContact getContact(String url) throws HubSpotException {
         try {
-            return parseContactData(httpService.getRequest(url));
+            return parseContactData((JSONObject) httpService.getRequest(url));
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
                 return null;
@@ -47,8 +46,8 @@ public class HSContactService {
 
         String url = "/contacts/v1/contact";
 
-        JsonNode jsonBody = httpService.postRequest(url, HSContact.toJsonString(), null);
-        HSContact.setId(jsonBody.getObject().getLong("vid"));
+        JSONObject jsonObject = (JSONObject) httpService.postRequest(url, HSContact.toJsonString());
+        HSContact.setId(jsonObject.getLong("vid"));
         return HSContact;
     }
 
@@ -58,7 +57,7 @@ public class HSContactService {
         }
 
         String url = "/contacts/v1/contact/vid/" + contact.getId() + "/profile";
-        JsonNode jsonBody = httpService.postRequest(url, contact.toJsonString(), null);
+        JSONObject jsonObject = (JSONObject) httpService.postRequest(url, contact.toJsonString());
         return contact;
     }
 
@@ -68,8 +67,8 @@ public class HSContactService {
         }
 
         String url = "/contacts/v1/contact/createOrUpdate/email/" + HSContact.getEmail();
-        JsonNode jsonBody = httpService.postRequest(url, HSContact.toJsonString(), null);
-        HSContact.setId(jsonBody.getObject().getLong("vid"));
+        JSONObject jsonObject = (JSONObject) httpService.postRequest(url, HSContact.toJsonString());
+        HSContact.setId(jsonObject.getLong("vid"));
         return HSContact;
     }
 
@@ -95,15 +94,11 @@ public class HSContactService {
         httpService.deleteRequest(url);
     }
 
-    private HSContact parseContactData(JsonNode jsonBody) {
+    private HSContact parseContactData(JSONObject jsonObject) {
         HSContact HSContact = new HSContact();
-
-        HSContact.setId(jsonBody.getObject().getLong("vid"));
-
-        JSONObject jsonProperties = jsonBody.getObject().getJSONObject("properties");
-
+        HSContact.setId(jsonObject.getLong("vid"));
+        JSONObject jsonProperties = jsonObject.getJSONObject("properties");
         Set<String> keys = jsonProperties.keySet();
-
         keys.stream().forEach( key ->
                 HSContact.setProperty(key,
                         jsonProperties.get(key) instanceof JSONObject ?
@@ -111,7 +106,6 @@ public class HSContactService {
                                 jsonProperties.get(key).toString()
                 )
         );
-
         return HSContact;
     }
 }

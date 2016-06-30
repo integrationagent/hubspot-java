@@ -16,8 +16,8 @@ public class HSListService {
     public Long getByID(String listId) throws HubSpotException {
         String url = "/contacts/v1/lists/" + listId;
         try {
-            JsonNode jsonNode = httpService.getRequest(url);
-            return jsonNode.getObject().getLong("listId");
+            JSONObject jsonObject = (JSONObject) httpService.getRequest(url);
+            return jsonObject.getLong("listId");
         } catch (HubSpotException e) {
             if (e.getMessage().equals("Not Found")) {
                 return null;
@@ -35,8 +35,8 @@ public class HSListService {
                 .put("portalId", portalId)
                 .toString();
 
-        JsonNode jsonNode = httpService.postRequest(url, properties);
-        return jsonNode.getObject().getLong("listId");
+        JSONObject jsonObject = (JSONObject) httpService.postRequest(url, properties);
+        return jsonObject.getLong("listId");
     }
 
     public void delete(String listId) throws HubSpotException {

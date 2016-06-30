@@ -3,6 +3,7 @@ package com.integrationagent.hubspotApi.service;
 import com.integrationagent.hubspotApi.domain.HSCompany;
 import com.integrationagent.hubspotApi.utils.HubSpotException;
 import com.mashape.unirest.http.JsonNode;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -19,8 +20,8 @@ public class HSCompanyService {
 
 	public HSCompany create(HSCompany HSCompany) throws HubSpotException {
 		String url = "/companies/v2/companies/";
-		JsonNode jsonBody = httpService.postRequest(url, HSCompany.toJsonString());
-		HSCompany.setId(jsonBody.getObject().getLong("companyId"));
+		JSONObject jsonObject = (JSONObject) httpService.postRequest(url, HSCompany.toJsonString());
+		HSCompany.setId(jsonObject.getLong("companyId"));
 		return HSCompany;
 
     }
@@ -52,19 +53,13 @@ public class HSCompanyService {
 
 
 	public List<HSCompany> getByDomain(String domain) throws HubSpotException {
-
 		List<HSCompany> companies = new ArrayList<>();
-
 		String url = "/companies/v2/companies/domain/" + domain;
+		JSONArray jsonArray = (JSONArray)httpService.getRequest(url);
 
-		JsonNode jsonNode = httpService.getRequest(url);
-
-		if(jsonNode.isArray()){
-			for (int i = 0; i < jsonNode.getArray().length(); i++) {
-				companies.add(parseCompanyData(jsonNode.getArray().optJSONObject(i)));
-			}
+		for (int i = 0; i < jsonArray.length(); i++) {
+			companies.add(parseCompanyData(jsonArray.optJSONObject(i)));
 		}
-
 		return companies;
 	}
 
