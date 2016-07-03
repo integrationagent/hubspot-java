@@ -2,7 +2,6 @@ package com.integrationagent.hubspotApi.service;
 
 import com.integrationagent.hubspotApi.domain.HSCompany;
 import com.integrationagent.hubspotApi.utils.HubSpotException;
-import com.mashape.unirest.http.JsonNode;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -26,9 +25,9 @@ public class HSCompanyService {
 
     }
 
-	public void addContact(String contactId, String companyId) throws HubSpotException {
+	public void addContact(long contactId, long companyId) throws HubSpotException {
 		String url = "/companies/v2/companies/" + companyId + "/contacts/" + contactId;
-		JsonNode jsonNode = httpService.putRequest(url, "");
+		httpService.putRequest(url, "");
 	}
 
 	private HSCompany parseCompanyData(JSONObject jsonBody) {
@@ -70,7 +69,7 @@ public class HSCompanyService {
 		String properties = company.toJsonString();
 
 		try {
-			JsonNode jsonBody = httpService.putRequest(url, properties);
+			httpService.putRequest(url, properties);
 			return company;
 		} catch (HubSpotException e) {
 			throw new HubSpotException("Cannot update company: " + company + ". Reason: " + e.getMessage(), e);

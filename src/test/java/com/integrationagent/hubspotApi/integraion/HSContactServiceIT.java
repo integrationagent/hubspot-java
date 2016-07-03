@@ -47,9 +47,11 @@ public class HSContactServiceIT {
 
     @Test
     public void getContact_Email_Test() throws Exception {
-        HSContact contact = hubSpot.contact().getByEmail("denis@reviewtogo.com");
-        assertEquals(79, contact.getId());
-        assertEquals("Garry", contact.getFirstname());
+        long contactId = hubSpot.contact().create(new HSContact(testEmail1, testFirstname, testLastname)).getId();
+        Thread.sleep(5000);
+        HSContact contact = hubSpot.contact().getByEmail(testEmail1);
+        assertEquals(contactId, contact.getId());
+        assertEquals(testFirstname, contact.getFirstname());
     }
 
     @Test
@@ -60,9 +62,11 @@ public class HSContactServiceIT {
 
     @Test
     public void getContact_Id_Test() throws Exception {
-        HSContact contact = hubSpot.contact().getByID(79);
-        assertEquals(79, contact.getId());
-        assertEquals("Garry", contact.getFirstname());
+        long contactId = hubSpot.contact().create(new HSContact(testEmail1, testFirstname, testLastname)).getId();
+        Thread.sleep(5000);
+        HSContact contact = hubSpot.contact().getByID(contactId);
+        assertEquals(contactId, contact.getId());
+        assertEquals(testFirstname, contact.getFirstname());
     }
 
     @Test
@@ -90,30 +94,18 @@ public class HSContactServiceIT {
     @Test
     public void updateContact_Test() throws Exception {
         String test_property = "linkedinbio";
-        String test_value_1 = "Test value 1";
-        String test_value_2 = "Test value 2";
-        String test_value;
-
-        HSContact old_HS_contact = hubSpot.contact().getByID(79);
-
-        if (old_HS_contact.getProperty(test_property).equals(test_value_1)) {
-            test_value = test_value_2;
-        } else {
-            test_value = test_value_1;
-        }
-
-        HSContact new_HS_contact = new HSContact();
-        new_HS_contact.setId(79).setEmail("denis@reviewtogo.com").setFirstname("Garry").setLastname("Vowr").setProperty(test_property, test_value);
-        hubSpot.contact().update(new_HS_contact);
-        assertEquals(hubSpot.contact().getByEmail("denis@reviewtogo.com").getProperty(test_property), test_value);
+        String test_value = "Test value 1";
+        HSContact contact = hubSpot.contact().create(new HSContact(testEmail1, testFirstname, testLastname));
+        Thread.sleep(5000);
+        contact.setProperty(test_property, test_value);
+        hubSpot.contact().update(contact);
+        assertEquals(hubSpot.contact().getByID(contact.getId()).getProperty(test_property), test_value);
     }
 
     @Test
     public void updateContact_Bad_Email_Test() throws Exception {
-        HSContact contact = new HSContact(testBadEmail, testFirstname, testLastname).setId(79);
-
+        HSContact contact = new HSContact(testBadEmail, testFirstname, testLastname).setId(1);
         exception.expect(HubSpotException.class);
-        exception.expectMessage(StringContains.containsString("is invalid"));
         hubSpot.contact().update(contact);
     }
 

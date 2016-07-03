@@ -6,7 +6,6 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import org.json.JSONObject;
 
 public class HttpService {
     
@@ -55,23 +54,20 @@ public class HttpService {
         }
     }
 
-    public JsonNode deleteRequest(String url) throws HubSpotException {
+    public Object deleteRequest(String url) throws HubSpotException {
         try {
             HttpResponse<JsonNode> resp = Unirest
                     .delete(apiBase + url)
                     .queryString("hapikey", apiKey)
                     .asJson();
 
-            checkResponse(resp);
-
-            return resp.getBody();
+            return checkResponse(resp);
         } catch (UnirestException e) {
             throw new HubSpotException("Cannot make delete request: \n URL: " + url, e);
         }
-
     }
 
-    public JsonNode putRequest(String url, String properties) throws HubSpotException {
+    public Object putRequest(String url, String properties) throws HubSpotException {
         try {
             HttpResponse<JsonNode> resp = Unirest
                     .put(apiBase + url)
@@ -81,11 +77,7 @@ public class HttpService {
                     .body(properties)
                     .asJson();
 
-            if(204 != resp.getStatus() && 202 != resp.getStatus() && 200 != resp.getStatus()){
-                throw new HubSpotException(new JSONObject(resp.getBody().toString()).toString(2));
-            }
-
-            return resp.getBody();
+            return checkResponse(resp);
         } catch (UnirestException e) {
             throw new HubSpotException("Can not get data", e);
         }
@@ -93,7 +85,11 @@ public class HttpService {
 
     private Object checkResponse(HttpResponse<JsonNode> resp) throws HubSpotException {
         if(204 != resp.getStatus() && 200 != resp.getStatus() && 202 != resp.getStatus()){
-            String message = (resp.getStatus() == 404) ? resp.getStatusText() : resp.getBody().getObject().getString("message");
+            String message = null;
+            try {
+                message = (resp.getStatus() == 404) ? resp.getStatusText() : resp.getBody().getObject().getString("message");
+            } catch (Exception e) {
+            }
 
             if (!Strings.isNullOrEmpty(message)) {
                 throw new HubSpotException(message, resp.getStatus());

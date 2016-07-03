@@ -41,7 +41,7 @@ public class HSListService {
 
     public void delete(String listId) throws HubSpotException {
         String url = "/contacts/v1/lists/" + listId;
-        JsonNode jsonNode = httpService.deleteRequest(url);
+        httpService.deleteRequest(url);
     }
 
     public void assign(Long listId, Long contactId) throws HubSpotException {
