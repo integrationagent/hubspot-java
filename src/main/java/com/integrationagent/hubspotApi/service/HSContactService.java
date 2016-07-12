@@ -94,7 +94,7 @@ public class HSContactService {
         httpService.deleteRequest(url);
     }
 
-    private HSContact parseContactData(JSONObject jsonObject) {
+    public HSContact parseContactData(JSONObject jsonObject) {
         HSContact HSContact = new HSContact();
         HSContact.setId(jsonObject.getLong("vid"));
         JSONObject jsonProperties = jsonObject.getJSONObject("properties");

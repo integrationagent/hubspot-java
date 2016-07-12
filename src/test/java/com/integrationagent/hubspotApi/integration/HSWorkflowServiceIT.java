@@ -1,4 +1,4 @@
-package com.integrationagent.hubspotApi.integraion;
+package com.integrationagent.hubspotApi.integration;
 
 import com.integrationagent.hubspotApi.service.HubSpot;
 import com.integrationagent.hubspotApi.utils.Helper;

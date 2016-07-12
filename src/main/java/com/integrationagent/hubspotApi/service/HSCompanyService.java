@@ -30,7 +30,7 @@ public class HSCompanyService {
 		httpService.putRequest(url, "");
 	}
 
-	private HSCompany parseCompanyData(JSONObject jsonBody) {
+	public HSCompany parseCompanyData(JSONObject jsonBody) {
 		HSCompany company = new HSCompany();
 
 		company.setId(jsonBody.getLong("companyId"));

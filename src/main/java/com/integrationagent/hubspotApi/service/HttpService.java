@@ -19,7 +19,6 @@ public class HttpService {
 
     public Object getRequest(String url) throws HubSpotException {
         try {
-            System.out.println(apiKey);
             HttpResponse<JsonNode> resp = Unirest
                     .get(apiBase + url)
                     .queryString("hapikey", apiKey)

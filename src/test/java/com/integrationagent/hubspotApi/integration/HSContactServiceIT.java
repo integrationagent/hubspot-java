@@ -1,5 +1,6 @@
-package com.integrationagent.hubspotApi.integraion;
+package com.integrationagent.hubspotApi.integration;
 
+import com.integrationagent.hubspotApi.service.HSContactService;
 import com.integrationagent.hubspotApi.utils.Helper;
 import com.integrationagent.hubspotApi.domain.HSContact;
 import com.integrationagent.hubspotApi.service.HubSpot;
@@ -14,6 +15,9 @@ import java.time.Instant;
 import java.util.Arrays;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class HSContactServiceIT {
 
@@ -43,6 +47,35 @@ public class HSContactServiceIT {
         assertNotEquals(0L, contact.getId());
         assertEquals(contact.getEmail(), hubSpot.contact().getByEmail(contact.getEmail()).getEmail());
         hubSpot.contact().delete(contact);
+    }
+
+    @Test
+    public void createContact_NetworkError_Test() throws Exception {
+        HSContact contact = new HSContact(testEmail1, testFirstname, testLastname);
+
+        HSContactService mockHSContactService = mock(HSContactService.class);
+        doThrow(new HubSpotException("Network error")).when(mockHSContactService).create(contact);
+        HubSpot mockHubSpot = mock(HubSpot.class);
+        when(mockHubSpot.contact()).thenReturn(mockHSContactService);
+        exception.expect(HubSpotException.class);
+        mockHubSpot.contact().create(contact);
+    }
+
+    @Test
+    public void createContactIncorrectProperty_Test() throws Exception {
+        HSContact contact = new HSContact(testEmail1, testFirstname, testLastname);
+        contact.setProperty("badpropertyz","Test value 1");
+        exception.expect(HubSpotException.class);
+        hubSpot.contact().create(contact);
+    }
+
+    @Test
+    public void createContactMissedRequiredProperty_Test() throws Exception {
+        HSContact contact = new HSContact();
+        contact.setFirstname(testFirstname);
+        contact.setLastname(testLastname);
+        exception.expect(HubSpotException.class);
+        hubSpot.contact().create(contact);
     }
 
     @Test
@@ -100,6 +133,38 @@ public class HSContactServiceIT {
         contact.setProperty(test_property, test_value);
         hubSpot.contact().update(contact);
         assertEquals(hubSpot.contact().getByID(contact.getId()).getProperty(test_property), test_value);
+    }
+
+    @Test
+    public void updateContactIncorrectPredefinedFieldValue_Test() throws Exception {
+        HSContact contact = hubSpot.contact().create(new HSContact(testEmail1, testFirstname, testLastname));
+        Thread.sleep(5000);
+        contact.setEmail("email@ru");
+        exception.expect(HubSpotException.class);
+        hubSpot.contact().update(contact);
+    }
+
+    @Test
+    public void updateContactMissedRequiredProperty_Test() throws Exception {
+        String test_property = "linkedinbio";
+        String test_value = "Test value 1";
+        HSContact contact = hubSpot.contact().create(new HSContact(testEmail1, testFirstname, testLastname));
+        Thread.sleep(5000);
+        contact.setProperty(test_property, test_value);
+        HSContact missedContact = new HSContact(contact.getEmail(), contact.getFirstname(), contact.getLastname());
+        exception.expect(HubSpotException.class);
+        hubSpot.contact().update(missedContact);
+    }
+
+    @Test
+    public void updateContactIncorrectProperty_Test() throws Exception {
+        String test_property = "badpropertyz";
+        String test_value = "Test value 1";
+        HSContact contact = hubSpot.contact().create(new HSContact(testEmail1, testFirstname, testLastname));
+        Thread.sleep(5000);
+        contact.setProperty(test_property, test_value);
+        exception.expect(HubSpotException.class);
+        hubSpot.contact().update(contact);
     }
 
     @Test

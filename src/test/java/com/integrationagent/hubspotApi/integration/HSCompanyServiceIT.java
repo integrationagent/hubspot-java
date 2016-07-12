@@ -1,4 +1,4 @@
-package com.integrationagent.hubspotApi.integraion;
+package com.integrationagent.hubspotApi.integration;
 
 import com.integrationagent.hubspotApi.domain.HSCompany;
 import com.integrationagent.hubspotApi.domain.HSContact;
