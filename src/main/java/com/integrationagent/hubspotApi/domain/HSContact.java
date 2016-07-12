@@ -70,7 +70,7 @@ public class HSContact {
     }
 
     public HSContact addProperties(Map<String, String> properties) {
-        this.properties.putAll(properties);
+        properties.forEach((k, v) -> this.setProperty(k, v));
         return this;
     }
 
