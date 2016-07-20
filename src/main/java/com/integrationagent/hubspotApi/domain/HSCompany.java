@@ -12,16 +12,29 @@ import java.util.stream.Collectors;
  * Author: dlunev
  * Date: 4/26/16 11:34 AM
  */
-public class Company {
-
+public class HSCompany {
 
 	private String name;
 	private String description;
-	private Long id;
+	private long id;
 
 	private Map<String, String> properties = new HashMap<>();
 
-	public Company setProperty(String property, String value) {
+    public HSCompany() {
+    }
+
+    public HSCompany(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
+
+    public HSCompany(String name, String description, Map<String, String> properties) {
+        this.name = name;
+        this.description = description;
+        this.properties = properties;
+    }
+
+    public HSCompany setProperty(String property, String value) {
         if(value != null && !value.equals("null")){
             this.properties.put(property, value);
         }
@@ -52,11 +65,11 @@ public class Company {
 		this.description = description;
 	}
 
-	public Long getId() {
+	public long getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 
