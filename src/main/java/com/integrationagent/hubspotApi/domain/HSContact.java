@@ -6,7 +6,6 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class HSContact {
 
@@ -96,9 +95,10 @@ public class HSContact {
     }
 
     public JSONObject toJson() {
-        Map<String, String> properties = this.getProperties().entrySet().stream()
-                                                        .filter(p -> !p.getKey().equals("vid"))
-                                                        .collect(Collectors.toMap(p -> p.getKey(), p -> p.getValue()));
+
+        Map<String, String> properties = new HashMap<>(getProperties());
+        properties.remove("vid");
+
         return HubSpotHelper.mapToJson(properties);
     }
 }
