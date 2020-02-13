@@ -1,12 +1,12 @@
 # hubspot-java
 Java Wrapper for HubSpot API (<http://developers.hubspot.com/docs/overview>)
 
-####Currently implemented
+#### Currently implemented
 * Contacts
 * Lists
 * Engagements
 
-####Maven Installation
+#### Maven Installation
 
 
 ```xml
@@ -36,5 +36,5 @@ Java Wrapper for HubSpot API (<http://developers.hubspot.com/docs/overview>)
 ```
 
 -----
-Developed by Integration Agent
-<http://integrationagent.com>
+Developed by DepositFix - Payment Integration for HubSpot
+<https://www.depositfix.com/>
